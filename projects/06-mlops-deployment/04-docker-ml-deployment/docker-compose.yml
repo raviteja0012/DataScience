@@ -1,0 +1,57 @@
+# docker-compose.yml – Local development setup
+#
+# Usage:
+#   docker-compose up --build        # build and start
+#   docker-compose up -d             # start in background
+#   docker-compose logs -f ml-api    # tail logs
+#   docker-compose down              # stop everything
+
+version: "3.9"
+
+services:
+  ml-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ml-model-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_DIR=/app/models
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount source for live reload during development
+      - ./app.py:/app/app.py
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+          cpus: "0.5"
+
+  # Optional: retrain service (run once, then exit)
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: trainer
+    container_name: ml-model-trainer
+    volumes:
+      - model-data:/build/models
+    command: ["python", "train.py", "--output", "/build/models", "--algorithm", "random_forest"]
+    profiles:
+      - retrain
+
+volumes:
+  model-data:
+    driver: local

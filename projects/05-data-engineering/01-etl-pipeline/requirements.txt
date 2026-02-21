@@ -1,0 +1,17 @@
+# ETL Pipeline - Requirements
+# All dependencies are Python standard library
+# No external packages needed
+#
+# Standard library modules used:
+# - csv
+# - json
+# - sqlite3
+# - logging
+# - hashlib
+# - re
+# - datetime
+# - collections
+# - typing
+# - random
+# - tempfile
+# - os, sys, io

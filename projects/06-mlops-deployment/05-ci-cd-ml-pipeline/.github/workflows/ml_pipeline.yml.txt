@@ -1,0 +1,347 @@
+# =============================================================================
+# GitHub Actions Workflow: ML Model CI/CD Pipeline
+# =============================================================================
+# This is an EXAMPLE workflow file (saved as .txt for portfolio demonstration).
+# Rename to .yml and place in .github/workflows/ of your repository to activate.
+#
+# Triggers:
+#   - Push to main or feature branches
+#   - Pull requests targeting main
+#   - Manual dispatch (workflow_dispatch)
+#
+# Stages:
+#   1. Lint & static analysis
+#   2. Data validation tests
+#   3. Model training
+#   4. Model evaluation & regression tests
+#   5. A/B test (on PRs)
+#   6. Build Docker image
+#   7. Canary deployment (on main)
+#   8. Promote to production (manual gate)
+# =============================================================================
+
+name: ML Model CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, "feature/**"]
+    paths:
+      - "src/**"
+      - "models/**"
+      - "tests/**"
+      - "requirements*.txt"
+      - "Dockerfile"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_retrain:
+        description: "Force model retraining"
+        type: boolean
+        default: false
+      deploy_target:
+        description: "Deployment target"
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  PYTHON_VERSION: "3.11"
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/ml-model-api
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Code Quality
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Lint & Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 black isort mypy
+
+      - name: Run flake8
+        run: flake8 src/ tests/ --max-line-length 120
+
+      - name: Check formatting (black)
+        run: black --check src/ tests/
+
+      - name: Check import order (isort)
+        run: isort --check-only src/ tests/
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Data Validation
+  # ---------------------------------------------------------------------------
+  data-validation:
+    name: Data Validation Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run data validation tests
+        run: |
+          python -m pytest tests/test_data_validation.py -v --tb=short
+        env:
+          DATA_PATH: data/
+
+      - name: Upload data validation report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: data-validation-report
+          path: reports/data_validation.json
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Model Training
+  # ---------------------------------------------------------------------------
+  train:
+    name: Train Model
+    runs-on: ubuntu-latest
+    needs: data-validation
+    outputs:
+      model_version: ${{ steps.train.outputs.model_version }}
+      model_hash: ${{ steps.train.outputs.model_hash }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train model
+        id: train
+        run: |
+          python train.py --output models/ --algorithm random_forest --seed 42
+          MODEL_HASH=$(python -c "import json; m=json.load(open('models/metadata.json')); print(m['model_hash'])")
+          echo "model_version=v$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+          echo "model_hash=${MODEL_HASH}" >> $GITHUB_OUTPUT
+
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model
+          path: |
+            models/model.pkl
+            models/metadata.json
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Model Evaluation & Regression Tests
+  # ---------------------------------------------------------------------------
+  evaluate:
+    name: Model Evaluation
+    runs-on: ubuntu-latest
+    needs: train
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download model artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+          path: models/
+
+      - name: Run model performance tests
+        run: |
+          python -m pytest tests/test_model_performance.py -v --tb=short \
+            --junitxml=reports/model_tests.xml
+
+      - name: Run regression tests against baseline
+        run: |
+          python -m pytest tests/test_regression.py -v --tb=short
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: reports/
+
+  # ---------------------------------------------------------------------------
+  # Job 5: A/B Test (PRs only)
+  # ---------------------------------------------------------------------------
+  ab-test:
+    name: A/B Test vs Production
+    runs-on: ubuntu-latest
+    needs: evaluate
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download candidate model
+        uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+          path: models/candidate/
+
+      - name: Run A/B test
+        run: |
+          python ci_cd_pipeline.py --mode ab-test \
+            --model-a models/production/model.pkl \
+            --model-b models/candidate/model.pkl
+
+      - name: Comment PR with A/B results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('reports/ab_test.json'));
+            const body = `## A/B Test Results
+            | Metric | Production | Candidate |
+            |--------|-----------|-----------|
+            | Accuracy | ${report.model_a.accuracy} | ${report.model_b.accuracy} |
+            | F1 Macro | ${report.model_a.f1_macro} | ${report.model_b.f1_macro} |
+
+            **Winner**: ${report.winner}
+            **Statistically Significant**: ${report.statistically_significant}`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # ---------------------------------------------------------------------------
+  # Job 6: Build Docker Image
+  # ---------------------------------------------------------------------------
+  build-image:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: evaluate
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download model artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+          path: models/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.train.outputs.model_hash }}
+            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---------------------------------------------------------------------------
+  # Job 7: Canary Deployment
+  # ---------------------------------------------------------------------------
+  canary-deploy:
+    name: Canary Deployment
+    runs-on: ubuntu-latest
+    needs: build-image
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy canary (5% traffic)
+        run: |
+          echo "Deploying canary with 5% traffic..."
+          # kubectl set image deployment/ml-api ml-api=$IMAGE:$TAG
+          # kubectl scale --replicas=1 deployment/ml-api-canary
+
+      - name: Wait and monitor canary
+        run: |
+          echo "Monitoring canary for 5 minutes..."
+          sleep 10  # In production: sleep 300 and check metrics
+
+      - name: Check canary health
+        run: |
+          echo "Checking canary health metrics..."
+          # curl -sf http://canary-endpoint/health || exit 1
+
+      - name: Promote canary to 100%
+        run: |
+          echo "Canary healthy. Promoting to full deployment..."
+          # kubectl set image deployment/ml-api ml-api=$IMAGE:$TAG
+
+  # ---------------------------------------------------------------------------
+  # Job 8: Production Promotion (manual gate)
+  # ---------------------------------------------------------------------------
+  promote-production:
+    name: Promote to Production
+    runs-on: ubuntu-latest
+    needs: canary-deploy
+    if: github.ref == 'refs/heads/main'
+    environment: production  # Requires manual approval in GitHub
+    steps:
+      - name: Promote to production
+        run: |
+          echo "Promoting model ${{ needs.train.outputs.model_version }} to production"
+          # Update model registry
+          # Update production deployment
+          # Notify team via Slack/email
+
+      - name: Verify production health
+        run: |
+          echo "Verifying production health..."
+          # curl -sf http://production-endpoint/health || exit 1
+
+      - name: Update model registry
+        run: |
+          echo "Updating model registry with production tag"
+          # python update_registry.py --model-id $MODEL_VERSION --stage production

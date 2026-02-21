@@ -1,0 +1,19 @@
+# API Data Collector - Requirements
+# All dependencies are Python standard library
+# No external packages needed
+#
+# Standard library modules used:
+# - json
+# - csv
+# - os, sys
+# - time
+# - random
+# - logging
+# - tempfile
+# - hashlib
+# - sqlite3
+# - copy
+# - datetime
+# - collections
+# - typing
+# - dataclasses

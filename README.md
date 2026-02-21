@@ -1,67 +1,127 @@
-Designing Data-Intensive Applications
-=====================================
+Data Science Portfolio
+=====================
 
-Literature References
----------------------
+A comprehensive collection of 33 production-ready data science projects organized into 6 categories, covering machine learning, deep learning, data analysis, NLP, data engineering, and MLOps. Each project is self-contained with synthetic data generation, making them immediately runnable.
 
-This repository accompanies the book [Designing Data-Intensive Applications](http://dataintensive.net/)
-by [Martin Kleppmann](https://www.google.co.uk/maps), published by
-[O'Reilly Media](http://shop.oreilly.com/product/0636920032175.do).
+Inspired by [50+ Data Project Ideas That Actually Get You Hired](https://penelopefitdatascientist.substack.com/p/50-data-project-ideas-that-actually) and reference implementations from the open-source data science community.
 
-The book contains a large number of references to further reading material for anyone who wants to
-go into more depth, ranging from books and research papers to blog posts, bug reports and tweets.
-Many of the references are freely available online.
+---
 
-The purpose of this repository is to maintain up-to-date links to the full text of online resources,
-where available. If you are reading the print edition, you may find it quicker than using a search
-engine to find the material. If you are reading an ebook edition, we have included links directly in
-the ebook, but unfortunately links tend to break frequently due to the nature of the web.
+## Project Catalog
 
-If you find a broken link or any error in the references, please submit a pull request to fix it.
-For academic papers, you can search for the title in [Google Scholar](https://scholar.google.co.uk/)
-to find open-access PDF files.
+### 1. Machine Learning (8 projects)
 
-Chapters
---------
+| # | Project | Techniques | Key Skills |
+|---|---------|-----------|------------|
+| 01 | [House Price Prediction](projects/01-machine-learning/01-house-price-prediction/) | Linear/Ridge/Lasso/RF/GBM, GridSearchCV | Regression, Feature Engineering, Cross-Validation |
+| 02 | [Customer Churn Classification](projects/01-machine-learning/02-customer-churn-classification/) | Logistic Regression/RF/XGBoost/SVM, SMOTE | Classification, Class Imbalance, Pipelines |
+| 03 | [Customer Segmentation](projects/01-machine-learning/03-customer-segmentation-clustering/) | K-Means/DBSCAN/Hierarchical, PCA | Clustering, Dimensionality Reduction, Silhouette Analysis |
+| 04 | [Sales Time Series Forecasting](projects/01-machine-learning/04-sales-time-series-forecasting/) | ARIMA, Exponential Smoothing, RF with Lag Features | Time Series, Walk-Forward Validation, Decomposition |
+| 05 | [Credit Card Fraud Detection](projects/01-machine-learning/05-credit-card-fraud-detection/) | Isolation Forest/RF/GBM, SMOTE/Undersampling | Anomaly Detection, Extreme Imbalance, Threshold Tuning |
+| 06 | [Medical Cost Prediction](projects/01-machine-learning/06-medical-cost-prediction/) | Ridge/Lasso/ElasticNet/RF/GBM | Regression, EDA, Residual Analysis, Feature Engineering |
+| 07 | [Heart Disease Classification](projects/01-machine-learning/07-heart-disease-classification/) | LR/KNN/SVM/DT/RF/GBM, VotingClassifier, StackingClassifier | Ensemble Methods, Feature Selection, Clinical Threshold Optimization |
+| 08 | [Loan Default Prediction](projects/01-machine-learning/08-loan-default-prediction/) | LR/RF/GBM, Probability Calibration | Risk Scoring, Scorecard Development, Profit Curves, Fairness Assessment |
 
-1.  [References for Chapter  1](https://github.com/ept/ddia-references/blob/master/chapter-01-refs.md)
-2.  [References for Chapter  2](https://github.com/ept/ddia-references/blob/master/chapter-02-refs.md)
-3.  [References for Chapter  3](https://github.com/ept/ddia-references/blob/master/chapter-03-refs.md)
-4.  [References for Chapter  4](https://github.com/ept/ddia-references/blob/master/chapter-04-refs.md)
-5.  [References for Chapter  5](https://github.com/ept/ddia-references/blob/master/chapter-05-refs.md)
-6.  [References for Chapter  6](https://github.com/ept/ddia-references/blob/master/chapter-06-refs.md)
-7.  [References for Chapter  7](https://github.com/ept/ddia-references/blob/master/chapter-07-refs.md)
-8.  [References for Chapter  8](https://github.com/ept/ddia-references/blob/master/chapter-08-refs.md)
-9.  [References for Chapter  9](https://github.com/ept/ddia-references/blob/master/chapter-09-refs.md)
-10. [References for Chapter 10](https://github.com/ept/ddia-references/blob/master/chapter-10-refs.md)
-11. [References for Chapter 11](https://github.com/ept/ddia-references/blob/master/chapter-11-refs.md)
-12. [References for Chapter 12](https://github.com/ept/ddia-references/blob/master/chapter-12-refs.md)
+### 2. Deep Learning (5 projects)
 
-Maps
-----
+| # | Project | Architecture | Key Skills |
+|---|---------|-------------|------------|
+| 01 | [Image Classification CNN](projects/02-deep-learning/01-image-classification-cnn/) | CNN with Conv2D/MaxPooling/BatchNorm | CIFAR-10/MNIST, Data Augmentation, LR Scheduling |
+| 02 | [Sentiment Analysis LSTM](projects/02-deep-learning/02-sentiment-analysis-lstm/) | Bi-LSTM with Attention Mechanism | IMDB Reviews, Text Preprocessing, Embedding |
+| 03 | [Music Genre Classification](projects/02-deep-learning/03-music-genre-classification/) | CNN/DNN on Audio Features | MFCCs, Spectral Features, Multi-class Classification |
+| 04 | [Face Mask Detection](projects/02-deep-learning/04-face-mask-detection/) | Transfer Learning (MobileNet/VGG-style) | Binary Classification, Data Augmentation, Callbacks |
+| 05 | [Text Generation RNN](projects/02-deep-learning/05-text-generation-rnn/) | Character-level LSTM | Temperature Sampling, Teacher Forcing, Text Generation |
 
-As an additional special touch, the book has a graphical table of contents for each chapter,
-[drawn in the style of a geographic map](https://www.oreilly.com/ideas/drawing-a-map-of-distributed-data-systems).
-Each chapter is represented by an island in the sea of distributed data. We have also assembled
-the archipelago into a poster which you can download here:
+### 3. Data Analysis (5 projects)
 
-* [Poster of maps in PDF format](https://github.com/ept/ddia-references/blob/master/ddia-poster.pdf)
-* [Poster of maps in JPEG format](https://github.com/ept/ddia-references/blob/master/ddia-poster.jpg)
+| # | Project | Domain | Key Skills |
+|---|---------|--------|------------|
+| 01 | [Netflix EDA](projects/03-data-analysis/01-netflix-eda/) | Entertainment | Content Distribution, Temporal Trends, Geographic Analysis |
+| 02 | [HR Analytics Dashboard](projects/03-data-analysis/02-hr-analytics-dashboard/) | Human Resources | Attrition Analysis, Statistical Tests (Chi-square, T-test) |
+| 03 | [E-Commerce Analysis](projects/03-data-analysis/03-ecommerce-analysis/) | Retail | RFM Analysis, Cohort Analysis, Market Basket Analysis |
+| 04 | [COVID-19 Analysis](projects/03-data-analysis/04-covid19-analysis/) | Public Health | CFR, Growth Rates, Moving Averages, Country Comparisons |
+| 05 | [Salary Analysis](projects/03-data-analysis/05-salary-analysis/) | Compensation | Pay Gap Analysis, Regression, Confidence Intervals |
 
-License
--------
+### 4. NLP (5 projects)
 
-Copyright (c) 2017 [Martin Kleppmann](http://martin.kleppmann.com/).
+| # | Project | Techniques | Key Skills |
+|---|---------|-----------|------------|
+| 01 | [Spam Detection](projects/04-nlp/01-spam-detection/) | TF-IDF, Naive Bayes/LR/SVM/RF | Text Preprocessing, Sklearn Pipelines, Feature Engineering |
+| 02 | [Topic Modeling](projects/04-nlp/02-topic-modeling/) | LDA, NMF | Coherence Optimization, Word Clouds, Document-Topic Assignment |
+| 03 | [Text Summarization](projects/04-nlp/03-text-summarization/) | TF-IDF Scoring, TextRank | Extractive Summarization, Compression Ratios, ROUGE Metrics |
+| 04 | [Named Entity Recognition](projects/04-nlp/04-named-entity-recognition/) | Rule-based NER with Regex/Gazetteers | Entity Extraction (PERSON/ORG/LOC/DATE/MONEY), Evaluation |
+| 05 | [Movie Review Sentiment](projects/04-nlp/05-movie-review-sentiment/) | N-grams, Sentiment Lexicons | Aspect-Based Sentiment, Error Analysis, Word Importance |
 
-<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a>
+### 5. Data Engineering (5 projects)
 
-You may freely use the material in this repository under a
-<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons
-Attribution-NonCommercial 4.0 International License</a> (CC BY-NC 4.0).
+| # | Project | Architecture | Key Skills |
+|---|---------|-------------|------------|
+| 01 | [ETL Pipeline](projects/05-data-engineering/01-etl-pipeline/) | Extract-Transform-Load from CSV/JSON/API | Data Quality Checks, Logging, SQLite, Pipeline Reports |
+| 02 | [Streaming Data Pipeline](projects/05-data-engineering/02-streaming-data-pipeline/) | Producer-Consumer with Threading | Windowed Aggregations, Anomaly Detection, Real-Time Stats |
+| 03 | [Data Warehouse Design](projects/05-data-engineering/03-data-warehouse-design/) | Star Schema with Fact/Dimension Tables | OLAP Queries, SCD Type 2, SQLite, Data Lineage |
+| 04 | [Web Scraping Pipeline](projects/05-data-engineering/04-web-scraping-pipeline/) | BeautifulSoup with Mock HTML | Rate Limiting, Retry Logic, Pagination, Ethics |
+| 05 | [API Data Collector](projects/05-data-engineering/05-api-data-collector/) | REST API Framework with Mock Endpoints | Auth Patterns, Rate Limiting, Incremental Loading |
 
-Thank you to
-[Shabbir Diwan](http://shabbirdiwan.com/),
-[Edie Freedman](http://www.ediefreedman.com/),
-[Ron Bilodeau](http://www.oreilly.com/pub/au/3771), and
-[Marie Beaugureau](https://twitter.com/cmariebeau)
-for designing the maps, and to [O'Reilly Media](https://www.oreilly.com/) for supporting the project.
+### 6. MLOps & Deployment (5 projects)
+
+| # | Project | Technology | Key Skills |
+|---|---------|-----------|------------|
+| 01 | [Model Serving Flask](projects/06-mlops-deployment/01-model-serving-flask/) | Flask REST API | /predict, /health, /model-info Endpoints, Input Validation |
+| 02 | [ML Pipeline Automation](projects/06-mlops-deployment/02-ml-pipeline-automation/) | Automated Pipeline Orchestration | Experiment Tracking, Model Registry, Reproducibility |
+| 03 | [Model Monitoring Dashboard](projects/06-mlops-deployment/03-model-monitoring-dashboard/) | Drift Detection System | KS Test, PSI, Concept Drift, Retraining Triggers |
+| 04 | [Docker ML Deployment](projects/06-mlops-deployment/04-docker-ml-deployment/) | Docker + FastAPI | Containerization, Multi-stage Build, docker-compose |
+| 05 | [CI/CD ML Pipeline](projects/06-mlops-deployment/05-ci-cd-ml-pipeline/) | CI/CD Simulation + GitHub Actions | A/B Testing, Canary Deployment, Rollback Logic |
+
+---
+
+## Getting Started
+
+```bash
+# Clone the repo
+git clone <this-repo-url>
+cd DataScience
+
+# Run any project (each is self-contained)
+cd projects/01-machine-learning/01-house-price-prediction
+pip install -r requirements.txt
+python house_price_prediction.py
+```
+
+Each project generates its own synthetic data, so no external datasets are needed.
+
+## Production-Ready Framework
+
+Following the six-component framework for production-ready data science projects:
+
+1. **Clear Problem Definition** - Each project starts with a well-defined business problem
+2. **Data Pipeline Design** - Real data processing pipelines, not just static CSV reads
+3. **Reproducible Code** - Random seeds, requirements.txt, self-contained scripts
+4. **Testing & Monitoring** - Model evaluation metrics, drift detection, quality checks
+5. **Deployment Strategy** - Flask/FastAPI serving, Docker containerization, CI/CD
+6. **Communication & Documentation** - Clear output, visualizations, and insights
+
+---
+
+## DDIA References
+
+This repository also includes literature references for [Designing Data-Intensive Applications](http://dataintensive.net/) by [Martin Kleppmann](http://martin.kleppmann.com/).
+
+### Chapters
+
+1.  [References for Chapter  1](chapter-01-refs.md)
+2.  [References for Chapter  2](chapter-02-refs.md)
+3.  [References for Chapter  3](chapter-03-refs.md)
+4.  [References for Chapter  4](chapter-04-refs.md)
+5.  [References for Chapter  5](chapter-05-refs.md)
+6.  [References for Chapter  6](chapter-06-refs.md)
+7.  [References for Chapter  7](chapter-07-refs.md)
+8.  [References for Chapter  8](chapter-08-refs.md)
+9.  [References for Chapter  9](chapter-09-refs.md)
+10. [References for Chapter 10](chapter-10-refs.md)
+11. [References for Chapter 11](chapter-11-refs.md)
+12. [References for Chapter 12](chapter-12-refs.md)
+
+### Maps
+
+* [Poster of maps in PDF format](ddia-poster.pdf)
+* [Poster of maps in JPEG format](ddia-poster.jpg)
