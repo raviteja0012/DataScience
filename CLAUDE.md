@@ -42,14 +42,25 @@
 
 ```
 DataScience/
-├── genai-portfolio/          # GenAI/ML portfolio projects
-│   ├── biller-integration-simulator/
-│   ├── payment-intelligence-agent/
-│   └── multi-source-data-integration/
+├── .github/workflows/        # CI/CD pipelines
+│   ├── ci.yml                # GenAI portfolio tests + lint
+│   └── test-projects.yml     # Classic projects smoke tests
+├── genai-portfolio/          # GenAI/enterprise data projects (240 tests)
+│   ├── biller-integration-simulator/   # 53 tests
+│   ├── payment-intelligence-agent/     # 101 tests
+│   └── multi-source-data-integration/  # 86 tests
+├── projects/                 # 33 classic DS/ML projects
+│   ├── 01-machine-learning/  # 8 projects
+│   ├── 02-deep-learning/     # 5 projects
+│   ├── 03-data-analysis/     # 5 projects
+│   ├── 04-nlp/               # 5 projects
+│   ├── 05-data-engineering/  # 5 projects
+│   └── 06-mlops-deployment/  # 5 projects
 ├── tasks/
 │   ├── todo.md               # Current priorities
 │   └── lessons.md            # Decisions & learnings
-└── CLAUDE.md                 # This file
+├── CLAUDE.md                 # This file
+└── README.md                 # Portfolio overview
 ```
 
 ## Tech Stack Preferences
@@ -60,3 +71,4 @@ DataScience/
 - Streamlit for data apps
 - pandas/numpy for data manipulation
 - structlog for logging
+- GitHub Actions for CI/CD

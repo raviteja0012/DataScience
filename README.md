@@ -1,9 +1,23 @@
 Data Science Portfolio
 =====================
 
-A comprehensive collection of 33 production-ready data science projects organized into 6 categories, covering machine learning, deep learning, data analysis, NLP, data engineering, and MLOps. Each project is self-contained with synthetic data generation, making them immediately runnable.
+A comprehensive collection of **36 production-ready data science projects** organized into 7 categories, covering machine learning, deep learning, data analysis, NLP, data engineering, MLOps, and GenAI/enterprise data systems. Each project is self-contained with synthetic data generation, making them immediately runnable.
 
 Inspired by [50+ Data Project Ideas That Actually Get You Hired](https://penelopefitdatascientist.substack.com/p/50-data-project-ideas-that-actually) and reference implementations from the open-source data science community.
+
+---
+
+## GenAI & Enterprise Data Portfolio
+
+Production-grade projects demonstrating enterprise data integration, AI-powered analytics, and payment systems engineering. Each project has full test suites (240 tests total), YAML-driven configuration, and runs entirely in demo mode with synthetic data.
+
+| Project | Description | Key Tech | Tests |
+|---------|-------------|----------|-------|
+| [Biller Integration Simulator](genai-portfolio/biller-integration-simulator/) | Utility CIS-to-payment platform integration with Oracle CC&B schema models, YAML-driven onboarding, three-way settlement reconciliation | Python, dataclasses, PyYAML, structlog | 53 |
+| [Payment Intelligence Agent](genai-portfolio/payment-intelligence-agent/) | Snowflake Cortex conversational agent with NL-to-SQL analytics, PCI-DSS v4.0 RAG, statistical anomaly detection, Streamlit chat UI | Streamlit, Plotly, FAISS, sentence-transformers | 101 |
+| [Multi-Source Data Integration](genai-portfolio/multi-source-data-integration/) | M&A data migration pipeline with source discovery, schema mapping, identity resolution (5 algorithms), checkpoint/restart cutover | pandas, numpy, Jinja2, PyYAML | 86 |
+
+See [genai-portfolio/README.md](genai-portfolio/README.md) for architecture details and quick start guides.
 
 ---
 
@@ -81,13 +95,28 @@ Inspired by [50+ Data Project Ideas That Actually Get You Hired](https://penelop
 git clone <this-repo-url>
 cd DataScience
 
-# Run any project (each is self-contained)
+# Run any classic project (each is self-contained)
 cd projects/01-machine-learning/01-house-price-prediction
 pip install -r requirements.txt
 python house_price_prediction.py
+
+# Run any GenAI portfolio project
+cd genai-portfolio/payment-intelligence-agent
+pip install -r requirements.txt
+python -m pytest tests/ -v          # run tests
+python -m src.app                   # launch Streamlit app (demo mode)
 ```
 
 Each project generates its own synthetic data, so no external datasets are needed.
+
+### Running All Tests
+
+```bash
+# GenAI portfolio tests (240 total)
+for proj in biller-integration-simulator payment-intelligence-agent multi-source-data-integration; do
+  python -m pytest genai-portfolio/$proj/tests/ -v
+done
+```
 
 ## Production-Ready Framework
 

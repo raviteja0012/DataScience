@@ -1,0 +1,192 @@
+name: Projects Portfolio CI
+
+on:
+  push:
+    branches: ["main", "master", "feature/**", "feat/**", "fix/**", "dev/**", "claude/**"]
+    paths:
+      - "projects/**"
+  pull_request:
+    branches: ["main", "master"]
+    paths:
+      - "projects/**"
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Job 1: Syntax-check every Python file across all 33 projects.
+  # No dependencies required -- just validates that every .py file parses.
+  # -----------------------------------------------------------------------
+  syntax-check:
+    name: "Syntax check: all projects"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile-check all Python files
+        run: |
+          echo "Checking syntax of every .py file under projects/ ..."
+          errors=0
+          while IFS= read -r pyfile; do
+            if ! python -m py_compile "$pyfile" 2>&1; then
+              echo "FAIL: $pyfile"
+              errors=$((errors + 1))
+            fi
+          done < <(find projects/ -name '*.py' -type f)
+
+          echo ""
+          if [ "$errors" -gt 0 ]; then
+            echo "Syntax errors found in $errors file(s)."
+            exit 1
+          else
+            echo "All Python files under projects/ pass syntax check."
+          fi
+
+  # -----------------------------------------------------------------------
+  # Job 2: Run a representative project from each of the 6 categories.
+  # Uses a matrix so each category reports independently.
+  #
+  # Strategy per category:
+  #   01-machine-learning  -> house-price-prediction (sklearn, built-in data)
+  #   02-deep-learning     -> import-check only (TF is too heavy for CI)
+  #   03-data-analysis     -> netflix-eda (pandas/matplotlib/seaborn)
+  #   04-nlp               -> spam-detection (sklearn-based, lightweight)
+  #   05-data-engineering   -> etl-pipeline (stdlib only -- full execution)
+  #   06-mlops-deployment   -> ml-pipeline-automation (sklearn/pandas only)
+  # -----------------------------------------------------------------------
+  sample-run:
+    name: "Sample: ${{ matrix.project.category }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - category: 01-machine-learning
+            path: projects/01-machine-learning/01-house-price-prediction
+            script: house_price_prediction.py
+            mode: run
+          - category: 02-deep-learning
+            path: projects/02-deep-learning
+            script: ""
+            mode: import-check
+          - category: 03-data-analysis
+            path: projects/03-data-analysis/01-netflix-eda
+            script: netflix_analysis.py
+            mode: run
+          - category: 04-nlp
+            path: projects/04-nlp/01-spam-detection
+            script: spam_detector.py
+            mode: run
+          - category: 05-data-engineering
+            path: projects/05-data-engineering/01-etl-pipeline
+            script: etl_pipeline.py
+            mode: run
+          - category: 06-mlops-deployment
+            path: projects/06-mlops-deployment/02-ml-pipeline-automation
+            script: ml_pipeline.py
+            mode: run
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-projects-${{ matrix.project.category }}-${{ hashFiles(format('{0}/requirements.txt', matrix.project.path)) }}
+          restore-keys: |
+            ${{ runner.os }}-pip-projects-${{ matrix.project.category }}-
+            ${{ runner.os }}-pip-projects-
+
+      # For "import-check" mode (02-deep-learning), validate that every .py
+      # file in the category can at least be compiled -- without installing
+      # heavy frameworks like TensorFlow.
+      - name: Import check (compile all .py in category)
+        if: matrix.project.mode == 'import-check'
+        run: |
+          echo "Running py_compile on all scripts in ${{ matrix.project.path }} ..."
+          errors=0
+          while IFS= read -r pyfile; do
+            if ! python -m py_compile "$pyfile" 2>&1; then
+              echo "FAIL: $pyfile"
+              errors=$((errors + 1))
+            fi
+          done < <(find "${{ matrix.project.path }}" -name '*.py' -type f)
+
+          if [ "$errors" -gt 0 ]; then
+            echo "Compile errors in $errors file(s)."
+            exit 1
+          else
+            echo "All files compile OK."
+          fi
+
+      # For "run" mode: install requirements and execute the script.
+      - name: Install dependencies
+        if: matrix.project.mode == 'run'
+        working-directory: ${{ matrix.project.path }}
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            # Filter out comment-only / blank lines before installing
+            grep -v '^\s*#' requirements.txt | grep -v '^\s*$' > _reqs_filtered.txt || true
+            if [ -s _reqs_filtered.txt ]; then
+              pip install -r _reqs_filtered.txt
+            else
+              echo "No actual dependencies to install (stdlib-only project)."
+            fi
+            rm -f _reqs_filtered.txt
+          fi
+          # matplotlib needs a non-interactive backend in CI
+          export MPLBACKEND=Agg
+
+      - name: Run sample project
+        if: matrix.project.mode == 'run'
+        working-directory: ${{ matrix.project.path }}
+        env:
+          MPLBACKEND: Agg
+        run: |
+          echo "Running ${{ matrix.project.script }} ..."
+          python "${{ matrix.project.script }}"
+          echo "Script completed successfully."
+
+  # -----------------------------------------------------------------------
+  # Job 3: Lint the projects/ directory with flake8 (same ignores as
+  # the genai-portfolio lint job).
+  # -----------------------------------------------------------------------
+  lint-projects:
+    name: "Lint: projects/"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+
+      - name: Run flake8 on projects/
+        run: |
+          flake8 projects/ \
+            --ignore=E501,W503,E203,E266,E402 \
+            --max-line-length=120 \
+            --statistics \
+            --count \
+            --show-source
