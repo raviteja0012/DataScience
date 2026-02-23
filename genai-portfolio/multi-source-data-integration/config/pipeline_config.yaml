@@ -1,0 +1,142 @@
+# =============================================================================
+# Multi-Source Data Integration Framework — Pipeline Configuration
+# =============================================================================
+# Controls the end-to-end integration pipeline for acquired company migrations.
+
+pipeline:
+  name: "acme-corp-acquisition-integration"
+  version: "2.1.0"
+  environment: "development"  # development | staging | production
+
+# ---------------------------------------------------------------------------
+# Source system registry
+# ---------------------------------------------------------------------------
+source_systems:
+  - id: "legacy_oracle"
+    config_file: "source_systems/legacy_oracle.yaml"
+    enabled: true
+    priority: 1   # lower = higher priority for survivorship
+
+  - id: "legacy_sqlserver"
+    config_file: "source_systems/legacy_sqlserver.yaml"
+    enabled: true
+    priority: 2
+
+target_system:
+  id: "target_snowflake"
+  config_file: "source_systems/target_snowflake.yaml"
+
+# ---------------------------------------------------------------------------
+# Discovery settings
+# ---------------------------------------------------------------------------
+discovery:
+  profile_row_limit: 100000       # sample size for profiling
+  quality_score_threshold: 0.70   # minimum acceptable quality score
+  detect_pii: true
+  dependency_depth: 5             # max FK traversal depth
+
+# ---------------------------------------------------------------------------
+# Schema mapping
+# ---------------------------------------------------------------------------
+mapping:
+  rules_directory: "mapping_rules/"
+  entities:
+    - customer_mapping.yaml
+    - product_mapping.yaml
+    - transaction_mapping.yaml
+  strict_mode: true               # fail on unmapped required columns
+  default_null_handling: "COALESCE_EMPTY"
+
+# ---------------------------------------------------------------------------
+# Identity resolution
+# ---------------------------------------------------------------------------
+identity_resolution:
+  match_threshold: 0.82           # minimum confidence to consider a match
+  strategies:
+    - name: "exact"
+      weight: 1.0
+      fields: ["email", "tax_id"]
+
+    - name: "fuzzy"
+      weight: 0.85
+      algorithm: "jaro_winkler"
+      fields: ["customer_name", "company_name"]
+      min_similarity: 0.88
+
+    - name: "phonetic"
+      weight: 0.70
+      algorithm: "metaphone"
+      fields: ["customer_name"]
+
+  survivorship:
+    default_rule: "most_complete"  # newest | most_complete | source_priority
+    field_overrides:
+      email: "newest"
+      phone: "newest"
+      address: "most_complete"
+      tax_id: "source_priority"
+
+  dedup:
+    enabled: true
+    within_source: true
+    cross_source: true
+    batch_size: 10000
+
+# ---------------------------------------------------------------------------
+# Cutover strategy
+# ---------------------------------------------------------------------------
+cutover:
+  strategy: "phased"              # big_bang | phased
+  max_parallel_loads: 4
+  checkpoint_enabled: true
+  checkpoint_dir: "/tmp/msdi_checkpoints"
+  rollback_enabled: true
+  rollback_snapshot_dir: "/tmp/msdi_rollback"
+
+  phases:
+    - name: "reference_data"
+      entities: ["products", "categories", "regions"]
+      order: 1
+
+    - name: "master_data"
+      entities: ["customers", "vendors", "employees"]
+      order: 2
+      depends_on: ["reference_data"]
+
+    - name: "transactional_data"
+      entities: ["orders", "order_lines", "payments"]
+      order: 3
+      depends_on: ["master_data"]
+
+  retry:
+    max_attempts: 3
+    backoff_seconds: 30
+
+# ---------------------------------------------------------------------------
+# Reconciliation / validation
+# ---------------------------------------------------------------------------
+reconciliation:
+  enabled: true
+  count_tolerance_pct: 0.0        # 0% tolerance on row counts
+  value_tolerance_pct: 0.01       # 0.01% tolerance on aggregates
+  hash_algorithm: "sha256"
+  sample_size: null               # null = full comparison
+  report:
+    format: "html"                # html | json | csv
+    output_dir: "./reports"
+    include_drill_down: true
+
+# ---------------------------------------------------------------------------
+# Logging & metrics
+# ---------------------------------------------------------------------------
+logging:
+  level: "INFO"
+  format: "json"                  # json | text
+  file: "./logs/pipeline.log"
+  rotation: "10MB"
+  retention_days: 30
+
+metrics:
+  enabled: true
+  export_format: "json"
+  output_file: "./metrics/pipeline_metrics.json"

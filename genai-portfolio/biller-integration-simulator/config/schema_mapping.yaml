@@ -1,0 +1,272 @@
+# Oracle CC&B Schema Field Mapping Configuration
+# Maps CIS-side Oracle CC&B table/column names to the payment platform's
+# canonical data model. This is used during biller onboarding and at runtime
+# when translating between CIS extracts and payment gateway payloads.
+
+# Mapping convention:
+#   source: Oracle CC&B table.column
+#   target: Payment platform canonical field
+#   transform: Optional transformation applied during mapping
+
+account_mapping:
+  table: "CI_ACCT"
+  fields:
+    - source: "ACCT_ID"
+      target: "customer_account_id"
+      transform: "strip_leading_zeros"
+      required: true
+      description: "Primary account identifier in the CIS"
+
+    - source: "CIS_DIVISION"
+      target: "biller_division_code"
+      transform: null
+      required: true
+      description: "Operating company division code"
+
+    - source: "SETUP_DT"
+      target: "account_created_date"
+      transform: "oracle_date_to_iso8601"
+      required: false
+
+    - source: "ACCT_STATUS_FLG"
+      target: "account_status"
+      transform: "status_flag_decode"
+      required: true
+      lookup:
+        "20": "active"
+        "40": "suspended"
+        "60": "closed"
+        "80": "written_off"
+
+    - source: "CURRENCY_CD"
+      target: "currency_code"
+      transform: null
+      required: true
+      default: "USD"
+
+    - source: "COLL_CL_CD"
+      target: "collection_class"
+      transform: null
+      required: false
+      description: "Collection class code for aged debt routing"
+
+    - source: "ALERT_INFO"
+      target: "account_alerts"
+      transform: "parse_alert_flags"
+      required: false
+
+person_mapping:
+  table: "CI_PER"
+  fields:
+    - source: "PER_ID"
+      target: "person_id"
+      transform: null
+      required: true
+
+    - source: "PER_OR_BUS_FLG"
+      target: "entity_type"
+      transform: "flag_decode"
+      required: true
+      lookup:
+        "P": "person"
+        "B": "business"
+
+    - source: "EMAILID"
+      target: "email_address"
+      transform: "lowercase"
+      required: false
+
+    - source: "LANG_CD"
+      target: "preferred_language"
+      transform: null
+      required: false
+      default: "ENG"
+
+    - source: "LIFE_SUPPORT_FLG"
+      target: "life_support_flag"
+      transform: "boolean_flag"
+      required: false
+      description: "Medical/life support equipment flag - critical for disconnect protection"
+
+bill_mapping:
+  table: "CI_BILL"
+  fields:
+    - source: "BILL_ID"
+      target: "bill_id"
+      transform: null
+      required: true
+
+    - source: "ACCT_ID"
+      target: "customer_account_id"
+      transform: "strip_leading_zeros"
+      required: true
+
+    - source: "BILL_DT"
+      target: "bill_date"
+      transform: "oracle_date_to_iso8601"
+      required: true
+
+    - source: "DUE_DT"
+      target: "due_date"
+      transform: "oracle_date_to_iso8601"
+      required: true
+
+    - source: "BILL_AMT"
+      target: "current_charges"
+      transform: "decimal_2"
+      required: true
+
+    - source: "PREV_UNPAID_AMT"
+      target: "previous_balance"
+      transform: "decimal_2"
+      required: true
+
+    - source: "TOT_AMT_DUE"
+      target: "total_amount_due"
+      transform: "decimal_2"
+      required: true
+
+    - source: "BILL_STATUS_FLG"
+      target: "bill_status"
+      transform: "status_flag_decode"
+      required: true
+      lookup:
+        "C": "complete"
+        "P": "pending"
+        "F": "frozen"
+        "X": "cancelled"
+        "E": "error"
+
+    - source: "CR_NOTE_FLG"
+      target: "is_credit_note"
+      transform: "boolean_flag"
+      required: false
+
+bill_segment_mapping:
+  table: "CI_BILL_SEG"
+  fields:
+    - source: "BILLSEG_ID"
+      target: "bill_segment_id"
+      transform: null
+      required: true
+
+    - source: "BILL_ID"
+      target: "bill_id"
+      transform: null
+      required: true
+
+    - source: "SA_ID"
+      target: "service_agreement_id"
+      transform: null
+      required: true
+
+    - source: "START_DT"
+      target: "service_period_start"
+      transform: "oracle_date_to_iso8601"
+      required: true
+
+    - source: "END_DT"
+      target: "service_period_end"
+      transform: "oracle_date_to_iso8601"
+      required: true
+
+    - source: "CALC_AMT"
+      target: "calculated_amount"
+      transform: "decimal_2"
+      required: true
+
+    - source: "SQ_OVERRIDE_FLG"
+      target: "rate_override"
+      transform: "boolean_flag"
+      required: false
+
+service_agreement_mapping:
+  table: "CI_SA"
+  fields:
+    - source: "SA_ID"
+      target: "service_agreement_id"
+      transform: null
+      required: true
+
+    - source: "ACCT_ID"
+      target: "customer_account_id"
+      transform: "strip_leading_zeros"
+      required: true
+
+    - source: "SA_TYPE_CD"
+      target: "service_type"
+      transform: "sa_type_decode"
+      required: true
+      lookup:
+        "E-RES": "electric_residential"
+        "E-COM": "electric_commercial"
+        "E-IND": "electric_industrial"
+        "G-RES": "gas_residential"
+        "G-COM": "gas_commercial"
+        "W-RES": "water_residential"
+        "W-COM": "water_commercial"
+
+    - source: "SA_STATUS_FLG"
+      target: "agreement_status"
+      transform: "status_flag_decode"
+      required: true
+      lookup:
+        "20": "active"
+        "30": "pending_start"
+        "40": "pending_stop"
+        "60": "stopped"
+        "70": "cancelled"
+
+    - source: "START_DT"
+      target: "effective_date"
+      transform: "oracle_date_to_iso8601"
+      required: true
+
+    - source: "END_DT"
+      target: "termination_date"
+      transform: "oracle_date_to_iso8601"
+      required: false
+
+    - source: "CHAR_PREM_ID"
+      target: "premise_id"
+      transform: null
+      required: false
+      description: "Links SA to a physical service location (premise)"
+
+# Transformation function definitions
+transforms:
+  strip_leading_zeros:
+    description: "Remove leading zeros from numeric string identifiers"
+    function: "lambda x: x.lstrip('0') or '0'"
+
+  oracle_date_to_iso8601:
+    description: "Convert Oracle DATE format (YYYY-MM-DD HH24:MI:SS) to ISO 8601"
+    function: "parse_oracle_date"
+
+  status_flag_decode:
+    description: "Decode CC&B status flag using the associated lookup table"
+    function: "lookup_decode"
+
+  flag_decode:
+    description: "Decode single-character CC&B flag using lookup"
+    function: "lookup_decode"
+
+  boolean_flag:
+    description: "Convert Y/N flag to boolean"
+    function: "lambda x: x.upper() == 'Y'"
+
+  lowercase:
+    description: "Convert to lowercase"
+    function: "lambda x: x.lower() if x else x"
+
+  decimal_2:
+    description: "Ensure 2-decimal-place precision for monetary amounts"
+    function: "lambda x: round(float(x), 2)"
+
+  parse_alert_flags:
+    description: "Parse pipe-delimited alert flag string into list"
+    function: "lambda x: x.split('|') if x else []"
+
+  sa_type_decode:
+    description: "Decode service agreement type code using lookup"
+    function: "lookup_decode"

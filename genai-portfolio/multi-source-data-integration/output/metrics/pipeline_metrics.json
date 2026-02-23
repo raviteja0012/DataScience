@@ -1,0 +1,217 @@
+{
+  "summary": {
+    "total_metrics_recorded": 20,
+    "total_pipeline_duration_s": 0.71,
+    "total_rows_processed": 8107,
+    "total_errors": 0,
+    "phases": [
+      "cutover",
+      "discovery",
+      "identity_resolution",
+      "mapping",
+      "reconciliation"
+    ]
+  },
+  "metrics": [
+    {
+      "name": "discovery_legacy_oracle_tables",
+      "value": 4,
+      "type": "gauge",
+      "phase": "discovery",
+      "entity": "",
+      "source_system": "legacy_oracle",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.019076+00:00"
+    },
+    {
+      "name": "discovery_legacy_oracle_rows",
+      "value": 2608,
+      "type": "gauge",
+      "phase": "discovery",
+      "entity": "",
+      "source_system": "legacy_oracle",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.019089+00:00"
+    },
+    {
+      "name": "discovery_legacy_sqlserver_tables",
+      "value": 4,
+      "type": "gauge",
+      "phase": "discovery",
+      "entity": "",
+      "source_system": "legacy_sqlserver",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.040345+00:00"
+    },
+    {
+      "name": "discovery_legacy_sqlserver_rows",
+      "value": 2599,
+      "type": "gauge",
+      "phase": "discovery",
+      "entity": "",
+      "source_system": "legacy_sqlserver",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.040354+00:00"
+    },
+    {
+      "name": "discovery",
+      "value": 0.0783,
+      "type": "timer",
+      "phase": "discovery",
+      "entity": "",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.042685+00:00"
+    },
+    {
+      "name": "mapping_total_rows",
+      "value": 1000,
+      "type": "gauge",
+      "phase": "mapping",
+      "entity": "",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.083322+00:00"
+    },
+    {
+      "name": "mapping",
+      "value": 0.0395,
+      "type": "timer",
+      "phase": "mapping",
+      "entity": "",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.083351+00:00"
+    },
+    {
+      "name": "identity_resolution_customer",
+      "value": 0.1864,
+      "type": "timer",
+      "phase": "identity_resolution",
+      "entity": "customer",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.271488+00:00"
+    },
+    {
+      "name": "identity_customer_input_rows",
+      "value": 1000,
+      "type": "gauge",
+      "phase": "identity_resolution",
+      "entity": "customer",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.271508+00:00"
+    },
+    {
+      "name": "identity_customer_resolved_entities",
+      "value": 930,
+      "type": "gauge",
+      "phase": "identity_resolution",
+      "entity": "customer",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.271512+00:00"
+    },
+    {
+      "name": "identity_customer_duplicates",
+      "value": 70,
+      "type": "gauge",
+      "phase": "identity_resolution",
+      "entity": "customer",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.271516+00:00"
+    },
+    {
+      "name": "identity_resolution",
+      "value": 0.1878,
+      "type": "timer",
+      "phase": "identity_resolution",
+      "entity": "",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.271764+00:00"
+    },
+    {
+      "name": "cutover_total_rows",
+      "value": 900,
+      "type": "gauge",
+      "phase": "cutover",
+      "entity": "",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.445215+00:00"
+    },
+    {
+      "name": "cutover_duration_s",
+      "value": 0.17114481899989187,
+      "type": "gauge",
+      "phase": "cutover",
+      "entity": "",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.445229+00:00"
+    },
+    {
+      "name": "cutover",
+      "value": 0.1735,
+      "type": "timer",
+      "phase": "cutover",
+      "entity": "",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.446302+00:00"
+    },
+    {
+      "name": "validate_customer",
+      "value": 0.0075,
+      "type": "timer",
+      "phase": "reconciliation",
+      "entity": "customer",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.472486+00:00"
+    },
+    {
+      "name": "validate_product",
+      "value": 0.0019,
+      "type": "timer",
+      "phase": "reconciliation",
+      "entity": "product",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.474568+00:00"
+    },
+    {
+      "name": "validate_sales_order",
+      "value": 0.0011,
+      "type": "timer",
+      "phase": "reconciliation",
+      "entity": "sales_order",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.476127+00:00"
+    },
+    {
+      "name": "validate_sales_order_line",
+      "value": 0.0006,
+      "type": "timer",
+      "phase": "reconciliation",
+      "entity": "sales_order_line",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.476916+00:00"
+    },
+    {
+      "name": "reconciliation",
+      "value": 0.0326,
+      "type": "timer",
+      "phase": "reconciliation",
+      "entity": "",
+      "source_system": "",
+      "tags": {},
+      "timestamp": "2026-02-23T02:46:55.479534+00:00"
+    }
+  ]
+}

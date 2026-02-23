@@ -1,0 +1,186 @@
+# Biller Onboarding Configuration
+# Defines parameters for each utility biller integrated with the payment platform.
+# Each biller entry maps a CIS installation to the payment gateway routing,
+# fee structures, and supported payment channels.
+
+billers:
+  - biller_id: "UTIL-GA-POWER-001"
+    biller_name: "Georgia Power & Light"
+    cis_division: "GP01"
+    cis_vendor: "oracle_ccb"
+    cis_version: "2.9.0.1"
+    status: "active"
+    onboarded_date: "2024-03-15"
+
+    payment_types:
+      - type: "one_time"
+        enabled: true
+        channels: ["web", "ivr", "mobile", "agent"]
+        max_amount: 25000.00
+        min_amount: 1.00
+      - type: "autopay"
+        enabled: true
+        channels: ["web", "mobile"]
+        max_amount: 15000.00
+        enrollment_required: true
+      - type: "budget_billing"
+        enabled: true
+        channels: ["web", "agent"]
+        recalculation_frequency: "quarterly"
+
+    fee_structure:
+      convenience_fee:
+        credit_card: 2.65
+        debit_card: 1.50
+        ach: 0.00
+        check: 0.00
+      late_payment_fee: 10.00
+      returned_payment_fee: 25.00
+      fee_assessed_by: "payment_platform"
+
+    settlement:
+      method: "ach_batch"
+      frequency: "next_business_day"
+      bank_routing: "061000052"
+      bank_account: "****7834"
+      settlement_currency: "USD"
+      holdback_percentage: 0.0
+      minimum_settlement_amount: 100.00
+
+    notifications:
+      payment_confirmation: true
+      payment_failure: true
+      settlement_complete: true
+      autopay_reminder: true
+      channels: ["email", "sms"]
+
+    validation_rules:
+      account_number_format: "^\\d{10}$"
+      account_number_length: 10
+      allow_partial_payments: true
+      allow_overpayments: false
+      require_bill_match: true
+
+  - biller_id: "UTIL-TX-WATER-002"
+    biller_name: "North Texas Municipal Water District"
+    cis_division: "NTW1"
+    cis_vendor: "oracle_ccb"
+    cis_version: "2.8.0.3"
+    status: "active"
+    onboarded_date: "2024-06-01"
+
+    payment_types:
+      - type: "one_time"
+        enabled: true
+        channels: ["web", "ivr", "mobile"]
+        max_amount: 10000.00
+        min_amount: 5.00
+      - type: "autopay"
+        enabled: true
+        channels: ["web"]
+        max_amount: 5000.00
+        enrollment_required: true
+
+    fee_structure:
+      convenience_fee:
+        credit_card: 2.95
+        debit_card: 1.75
+        ach: 0.00
+        check: 0.00
+      late_payment_fee: 15.00
+      returned_payment_fee: 30.00
+      fee_assessed_by: "biller"
+
+    settlement:
+      method: "ach_batch"
+      frequency: "t_plus_2"
+      bank_routing: "111000025"
+      bank_account: "****4521"
+      settlement_currency: "USD"
+      holdback_percentage: 2.0
+      minimum_settlement_amount: 250.00
+
+    notifications:
+      payment_confirmation: true
+      payment_failure: true
+      settlement_complete: true
+      autopay_reminder: false
+      channels: ["email"]
+
+    validation_rules:
+      account_number_format: "^[A-Z]{2}\\d{8}$"
+      account_number_length: 10
+      allow_partial_payments: false
+      allow_overpayments: false
+      require_bill_match: true
+
+  - biller_id: "UTIL-CA-GAS-003"
+    biller_name: "Pacific Coast Gas & Electric"
+    cis_division: "PCG1"
+    cis_vendor: "oracle_ccb"
+    cis_version: "2.9.0.2"
+    status: "pending"
+    onboarded_date: null
+
+    payment_types:
+      - type: "one_time"
+        enabled: true
+        channels: ["web", "ivr", "mobile", "agent", "kiosk"]
+        max_amount: 50000.00
+        min_amount: 1.00
+      - type: "autopay"
+        enabled: true
+        channels: ["web", "mobile"]
+        max_amount: 25000.00
+        enrollment_required: true
+      - type: "budget_billing"
+        enabled: true
+        channels: ["web", "agent"]
+        recalculation_frequency: "monthly"
+      - type: "prepay"
+        enabled: true
+        channels: ["web", "mobile", "kiosk"]
+        max_amount: 500.00
+
+    fee_structure:
+      convenience_fee:
+        credit_card: 1.99
+        debit_card: 0.99
+        ach: 0.00
+        check: 0.00
+      late_payment_fee: 5.00
+      returned_payment_fee: 20.00
+      fee_assessed_by: "payment_platform"
+
+    settlement:
+      method: "wire"
+      frequency: "daily"
+      bank_routing: "121000358"
+      bank_account: "****9102"
+      settlement_currency: "USD"
+      holdback_percentage: 1.5
+      minimum_settlement_amount: 500.00
+
+    notifications:
+      payment_confirmation: true
+      payment_failure: true
+      settlement_complete: true
+      autopay_reminder: true
+      channels: ["email", "sms", "push"]
+
+    validation_rules:
+      account_number_format: "^\\d{12}$"
+      account_number_length: 12
+      allow_partial_payments: true
+      allow_overpayments: true
+      require_bill_match: false
+
+# Global defaults applied when biller-specific values are missing
+defaults:
+  cis_vendor: "oracle_ccb"
+  settlement_currency: "USD"
+  max_retry_attempts: 3
+  retry_backoff_seconds: [30, 120, 600]
+  payment_timeout_seconds: 30
+  batch_size: 500
+  idempotency_window_hours: 24

@@ -1,0 +1,98 @@
+{
+  "pipeline_name": "demo-reconciliation",
+  "generated_at": "2026-02-23T02:47:06.335417+00:00",
+  "overall_passed": false,
+  "entities": [
+    {
+      "entity": "customer",
+      "passed": false,
+      "count_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "total_row_count",
+            "expected": 600,
+            "actual": 600,
+            "delta": 0,
+            "passed": true
+          },
+          {
+            "name": "source_count_legacy_oracle",
+            "expected": 300,
+            "actual": 300,
+            "delta": 0,
+            "passed": true
+          },
+          {
+            "name": "source_count_legacy_sqlserver",
+            "expected": 300,
+            "actual": 300,
+            "delta": 0,
+            "passed": true
+          }
+        ]
+      },
+      "hash_comparison": {
+        "passed": false,
+        "matching_rows": 300,
+        "missing_in_target": 0,
+        "missing_in_source": 0,
+        "value_mismatches": 1,
+        "match_pct": 50.0
+      }
+    },
+    {
+      "entity": "product",
+      "passed": false,
+      "count_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "total_row_count",
+            "expected": 113,
+            "actual": 113,
+            "delta": 0,
+            "passed": true
+          },
+          {
+            "name": "source_count_legacy_oracle",
+            "expected": 55,
+            "actual": 55,
+            "delta": 0,
+            "passed": true
+          },
+          {
+            "name": "source_count_legacy_sqlserver",
+            "expected": 58,
+            "actual": 58,
+            "delta": 0,
+            "passed": true
+          }
+        ]
+      },
+      "value_reconciliation": {
+        "passed": false,
+        "checks": [
+          {
+            "name": "total_unit_price",
+            "type": "sum",
+            "column": "UNIT_PRICE",
+            "passed": false
+          },
+          {
+            "name": "price_range",
+            "type": "min",
+            "column": "UNIT_PRICE",
+            "passed": true
+          },
+          {
+            "name": "category_distribution",
+            "type": "distribution",
+            "column": "PROD_CAT_CD",
+            "passed": true
+          }
+        ]
+      }
+    }
+  ]
+}

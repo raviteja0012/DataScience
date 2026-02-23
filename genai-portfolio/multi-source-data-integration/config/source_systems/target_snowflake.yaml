@@ -1,0 +1,135 @@
+# =============================================================================
+# Target System: Snowflake Data Warehouse
+# =============================================================================
+# Consolidated enterprise data warehouse. All acquired company data will be
+# migrated and unified into this target schema.
+
+system:
+  id: "target_snowflake"
+  name: "Enterprise Snowflake DW"
+  platform: "snowflake"
+  version: "current"
+  description: "Consolidated enterprise data warehouse for all divisions"
+  owner: "data-platform@parentcorp.com"
+
+connection:
+  account: "${SNOWFLAKE_ACCOUNT}"
+  username: "${SNOWFLAKE_USER}"
+  password: "${SNOWFLAKE_PASS}"
+  warehouse: "ETL_WH_LARGE"
+  database: "ENTERPRISE_DW"
+  role: "ETL_ROLE"
+  schema: "INTEGRATED"
+  pool_size: 10
+  pool_timeout: 60
+
+schemas:
+  - name: "INTEGRATED"
+    tables:
+      - name: "DIM_CUSTOMER"
+        description: "Unified customer dimension — golden record from all sources"
+        primary_key: "CUSTOMER_SK"
+        columns:
+          - { name: "CUSTOMER_SK",        type: "NUMBER(38,0)",    nullable: false, description: "Surrogate key" }
+          - { name: "CUSTOMER_BK",        type: "VARCHAR(50)",     nullable: false, description: "Business key (resolved identity)" }
+          - { name: "SOURCE_SYSTEM",      type: "VARCHAR(30)",     nullable: false }
+          - { name: "SOURCE_ID",          type: "VARCHAR(50)",     nullable: false }
+          - { name: "CUSTOMER_NAME",      type: "VARCHAR(300)",    nullable: false }
+          - { name: "FIRST_NAME",         type: "VARCHAR(150)",    nullable: true  }
+          - { name: "LAST_NAME",          type: "VARCHAR(150)",    nullable: true  }
+          - { name: "COMPANY_NAME",       type: "VARCHAR(250)",    nullable: true  }
+          - { name: "FULL_ADDRESS",       type: "VARCHAR(500)",    nullable: true  }
+          - { name: "CITY",               type: "VARCHAR(100)",    nullable: true  }
+          - { name: "STATE_PROVINCE",     type: "VARCHAR(50)",     nullable: true  }
+          - { name: "POSTAL_CODE",        type: "VARCHAR(15)",     nullable: true  }
+          - { name: "COUNTRY_CODE",       type: "VARCHAR(3)",      nullable: true  }
+          - { name: "EMAIL",              type: "VARCHAR(255)",    nullable: true  }
+          - { name: "PHONE",              type: "VARCHAR(25)",     nullable: true  }
+          - { name: "TAX_ID",             type: "VARCHAR(25)",     nullable: true  }
+          - { name: "CUSTOMER_TYPE",      type: "VARCHAR(20)",     nullable: false }
+          - { name: "STATUS",             type: "VARCHAR(15)",     nullable: false }
+          - { name: "CREATED_AT",         type: "TIMESTAMP_NTZ",   nullable: false }
+          - { name: "UPDATED_AT",         type: "TIMESTAMP_NTZ",   nullable: true  }
+          - { name: "LOADED_AT",          type: "TIMESTAMP_NTZ",   nullable: false, description: "ETL load timestamp" }
+          - { name: "MATCH_CONFIDENCE",   type: "NUMBER(5,4)",     nullable: true,  description: "Identity resolution confidence" }
+
+      - name: "DIM_PRODUCT"
+        description: "Unified product dimension"
+        primary_key: "PRODUCT_SK"
+        columns:
+          - { name: "PRODUCT_SK",         type: "NUMBER(38,0)",    nullable: false }
+          - { name: "PRODUCT_BK",         type: "VARCHAR(50)",     nullable: false }
+          - { name: "SOURCE_SYSTEM",      type: "VARCHAR(30)",     nullable: false }
+          - { name: "SOURCE_ID",          type: "VARCHAR(50)",     nullable: false }
+          - { name: "SKU",                type: "VARCHAR(30)",     nullable: false }
+          - { name: "PRODUCT_NAME",       type: "VARCHAR(500)",    nullable: false }
+          - { name: "CATEGORY_CODE",      type: "VARCHAR(15)",     nullable: true  }
+          - { name: "LIST_PRICE",         type: "NUMBER(12,2)",    nullable: false }
+          - { name: "STANDARD_COST",      type: "NUMBER(12,2)",    nullable: true  }
+          - { name: "WEIGHT_KG",          type: "NUMBER(8,3)",     nullable: true  }
+          - { name: "IS_ACTIVE",          type: "BOOLEAN",         nullable: false }
+          - { name: "CREATED_AT",         type: "TIMESTAMP_NTZ",   nullable: false }
+          - { name: "UPDATED_AT",         type: "TIMESTAMP_NTZ",   nullable: true  }
+          - { name: "LOADED_AT",          type: "TIMESTAMP_NTZ",   nullable: false }
+
+      - name: "FACT_SALES_ORDER"
+        description: "Unified sales order fact"
+        primary_key: "SALES_ORDER_SK"
+        columns:
+          - { name: "SALES_ORDER_SK",     type: "NUMBER(38,0)",    nullable: false }
+          - { name: "ORDER_BK",           type: "VARCHAR(50)",     nullable: false }
+          - { name: "SOURCE_SYSTEM",      type: "VARCHAR(30)",     nullable: false }
+          - { name: "SOURCE_ID",          type: "VARCHAR(50)",     nullable: false }
+          - { name: "CUSTOMER_SK",        type: "NUMBER(38,0)",    nullable: false }
+          - { name: "ORDER_DATE",         type: "DATE",            nullable: false }
+          - { name: "SHIP_DATE",          type: "DATE",            nullable: true  }
+          - { name: "ORDER_STATUS",       type: "VARCHAR(20)",     nullable: false }
+          - { name: "ORDER_TOTAL",        type: "NUMBER(14,2)",    nullable: false }
+          - { name: "TAX_AMOUNT",         type: "NUMBER(12,2)",    nullable: true  }
+          - { name: "DISCOUNT_AMOUNT",    type: "NUMBER(12,2)",    nullable: true  }
+          - { name: "SHIPPING_METHOD",    type: "VARCHAR(30)",     nullable: true  }
+          - { name: "CREATED_AT",         type: "TIMESTAMP_NTZ",   nullable: false }
+          - { name: "LOADED_AT",          type: "TIMESTAMP_NTZ",   nullable: false }
+
+      - name: "FACT_SALES_ORDER_LINE"
+        description: "Unified sales order line fact"
+        primary_key: "SALES_ORDER_LINE_SK"
+        columns:
+          - { name: "SALES_ORDER_LINE_SK", type: "NUMBER(38,0)",   nullable: false }
+          - { name: "LINE_BK",            type: "VARCHAR(50)",     nullable: false }
+          - { name: "SOURCE_SYSTEM",      type: "VARCHAR(30)",     nullable: false }
+          - { name: "SOURCE_ID",          type: "VARCHAR(50)",     nullable: false }
+          - { name: "SALES_ORDER_SK",     type: "NUMBER(38,0)",    nullable: false }
+          - { name: "PRODUCT_SK",         type: "NUMBER(38,0)",    nullable: false }
+          - { name: "QUANTITY",           type: "NUMBER(8,0)",     nullable: false }
+          - { name: "UNIT_PRICE",         type: "NUMBER(12,2)",    nullable: false }
+          - { name: "LINE_TOTAL",         type: "NUMBER(14,2)",    nullable: false }
+          - { name: "DISCOUNT_PERCENT",   type: "NUMBER(5,2)",     nullable: true  }
+          - { name: "LOADED_AT",          type: "TIMESTAMP_NTZ",   nullable: false }
+
+    foreign_keys:
+      - name: "FK_FACT_ORDER_DIM_CUSTOMER"
+        source_table: "FACT_SALES_ORDER"
+        source_column: "CUSTOMER_SK"
+        target_table: "DIM_CUSTOMER"
+        target_column: "CUSTOMER_SK"
+
+      - name: "FK_FACT_LINE_FACT_ORDER"
+        source_table: "FACT_SALES_ORDER_LINE"
+        source_column: "SALES_ORDER_SK"
+        target_table: "FACT_SALES_ORDER"
+        target_column: "SALES_ORDER_SK"
+
+      - name: "FK_FACT_LINE_DIM_PRODUCT"
+        source_table: "FACT_SALES_ORDER_LINE"
+        source_column: "PRODUCT_SK"
+        target_table: "DIM_PRODUCT"
+        target_column: "PRODUCT_SK"
+
+data_characteristics:
+  encoding: "UTF-8"
+  date_format: "YYYY-MM-DD HH24:MI:SS.FF3"
+  decimal_separator: "."
+  null_representation: null
+  boolean_representation: "TRUE/FALSE"
+  timezone: "UTC"

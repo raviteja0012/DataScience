@@ -1,0 +1,129 @@
+# =============================================================================
+# Entity Mapping: Product
+# =============================================================================
+# Maps product records from both acquired systems into the unified
+# DIM_PRODUCT dimension in the target Snowflake warehouse.
+
+entity: "product"
+target_table: "INTEGRATED.DIM_PRODUCT"
+description: "Product entity mapping from legacy Oracle and SQL Server systems"
+
+sources:
+  # ---------------------------------------------------------------------------
+  # Source: Legacy Oracle (AcmeCorp ERP)
+  # ---------------------------------------------------------------------------
+  - system_id: "legacy_oracle"
+    source_table: "ERP_OWNER.PRODUCT_CATALOG"
+    mappings:
+      - source_column: "PROD_ID"
+        target_column: "SOURCE_ID"
+        transform: "CAST_TO_VARCHAR"
+
+      - source_column: "PROD_SKU"
+        target_column: "SKU"
+        transform: "TRIM"
+
+      - source_column: "PROD_DESC"
+        target_column: "PRODUCT_NAME"
+        transform: "TRIM"
+
+      - source_column: "PROD_CAT_CD"
+        target_column: "CATEGORY_CODE"
+        transform: "DIRECT"
+
+      - source_column: "UNIT_PRICE"
+        target_column: "LIST_PRICE"
+        transform: "DIRECT"
+
+      - source_column: "UNIT_COST"
+        target_column: "STANDARD_COST"
+        transform: "DIRECT"
+
+      - source_column: "WEIGHT_KG"
+        target_column: "WEIGHT_KG"
+        transform: "DIRECT"
+
+      - source_column: "IS_ACTIVE"
+        target_column: "IS_ACTIVE"
+        transform: "LOOKUP"
+        lookup_map:
+          "Y": true
+          "N": false
+          "1": true
+          "0": false
+        default: false
+
+      - source_column: "CREATED_DT"
+        target_column: "CREATED_AT"
+        transform: "CAST_TIMESTAMP"
+
+      - source_column: "MODIFIED_DT"
+        target_column: "UPDATED_AT"
+        transform: "CAST_TIMESTAMP"
+
+      - source_column: null
+        target_column: "SOURCE_SYSTEM"
+        transform: "CONSTANT"
+        value: "legacy_oracle"
+
+  # ---------------------------------------------------------------------------
+  # Source: Legacy SQL Server (BetaTech CRM)
+  # ---------------------------------------------------------------------------
+  - system_id: "legacy_sqlserver"
+    source_table: "dbo.Products"
+    mappings:
+      - source_column: "ProductID"
+        target_column: "SOURCE_ID"
+        transform: "CAST_TO_VARCHAR"
+
+      - source_column: "SKU"
+        target_column: "SKU"
+        transform: "TRIM"
+
+      - source_column: "ProductName"
+        target_column: "PRODUCT_NAME"
+        transform: "TRIM"
+
+      - source_column: "CategoryCode"
+        target_column: "CATEGORY_CODE"
+        transform: "DIRECT"
+
+      - source_column: "ListPrice"
+        target_column: "LIST_PRICE"
+        transform: "DIRECT"
+
+      - source_column: "StandardCost"
+        target_column: "STANDARD_COST"
+        transform: "DIRECT"
+
+      - source_column: "WeightKg"
+        target_column: "WEIGHT_KG"
+        transform: "DIRECT"
+
+      - source_column: "IsActive"
+        target_column: "IS_ACTIVE"
+        transform: "BIT_TO_BOOLEAN"
+
+      - source_column: "CreatedDate"
+        target_column: "CREATED_AT"
+        transform: "CAST_TIMESTAMP"
+
+      - source_column: "ModifiedDate"
+        target_column: "UPDATED_AT"
+        transform: "CAST_TIMESTAMP"
+
+      - source_column: null
+        target_column: "SOURCE_SYSTEM"
+        transform: "CONSTANT"
+        value: "legacy_sqlserver"
+
+generated_columns:
+  - column: "PRODUCT_SK"
+    strategy: "SEQUENCE"
+
+  - column: "PRODUCT_BK"
+    strategy: "SKU_BASED"
+    description: "Business key derived from normalized SKU"
+
+  - column: "LOADED_AT"
+    strategy: "CURRENT_TIMESTAMP"

@@ -1,0 +1,41 @@
+# Snowflake Connection Configuration (Template)
+# Copy this to snowflake_config.local.yaml and fill in credentials.
+# NEVER commit credentials to version control.
+
+connection:
+  account: "${SNOWFLAKE_ACCOUNT}"
+  user: "${SNOWFLAKE_USER}"
+  password: "${SNOWFLAKE_PASSWORD}"
+  role: "PAYMENT_ANALYST"
+  warehouse: "PAYMENT_WH"
+  database: "PAYMENT_DB"
+  schema: "PAYMENT_SCHEMA"
+
+  # Optional: key-pair authentication
+  # private_key_path: "/path/to/rsa_key.p8"
+  # private_key_passphrase: "${SNOWFLAKE_PRIVATE_KEY_PASSPHRASE}"
+
+  # Connection pool settings
+  pool:
+    min_connections: 1
+    max_connections: 5
+    idle_timeout_seconds: 300
+
+cortex:
+  # Snowflake Cortex LLM function settings
+  llm_function: "SNOWFLAKE.CORTEX.COMPLETE"
+  embed_function: "SNOWFLAKE.CORTEX.EMBED"
+  embed_model: "e5-base-v2"
+  llm_model: "mistral-large2"
+
+search_service:
+  # Cortex Search service for RAG
+  service_name: "PCI_COMPLIANCE_SEARCH"
+  database: "PAYMENT_DB"
+  schema: "PAYMENT_SCHEMA"
+
+# Demo mode uses synthetic data and local models
+demo:
+  enabled: true
+  synthetic_rows: 10000
+  local_embedding_model: "all-MiniLM-L6-v2"

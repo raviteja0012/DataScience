@@ -1,0 +1,244 @@
+# =============================================================================
+# Entity Mapping: Transactions (Orders + Order Lines)
+# =============================================================================
+# Maps sales order headers and line items from both acquired systems into
+# the unified FACT_SALES_ORDER and FACT_SALES_ORDER_LINE tables.
+
+entity: "transaction"
+description: "Transaction entity mapping — orders and order lines"
+
+tables:
+  # ===========================================================================
+  # FACT_SALES_ORDER — Order Headers
+  # ===========================================================================
+  - target_table: "INTEGRATED.FACT_SALES_ORDER"
+    sources:
+      - system_id: "legacy_oracle"
+        source_table: "ERP_OWNER.ORDER_HEADER"
+        mappings:
+          - source_column: "ORDER_ID"
+            target_column: "SOURCE_ID"
+            transform: "CAST_TO_VARCHAR"
+
+          - source_column: "ORDER_ID"
+            target_column: "ORDER_BK"
+            transform: "PREFIX"
+            prefix: "ORA-"
+
+          - source_column: "CUST_ID"
+            target_column: "CUSTOMER_SK"
+            transform: "SURROGATE_KEY_LOOKUP"
+            lookup_table: "DIM_CUSTOMER"
+            lookup_source_system: "legacy_oracle"
+            lookup_source_column: "SOURCE_ID"
+
+          - source_column: "ORDER_DT"
+            target_column: "ORDER_DATE"
+            transform: "CAST_DATE"
+
+          - source_column: "SHIP_DT"
+            target_column: "SHIP_DATE"
+            transform: "CAST_DATE"
+
+          - source_column: "ORDER_STATUS"
+            target_column: "ORDER_STATUS"
+            transform: "LOOKUP"
+            lookup_map:
+              "OP": "Open"
+              "CL": "Closed"
+              "CN": "Cancelled"
+              "RT": "Returned"
+              "HD": "On Hold"
+            default: "Unknown"
+
+          - source_column: "ORDER_TOTAL"
+            target_column: "ORDER_TOTAL"
+            transform: "DIRECT"
+
+          - source_column: "TAX_AMT"
+            target_column: "TAX_AMOUNT"
+            transform: "DIRECT"
+
+          - source_column: "DISCOUNT_AMT"
+            target_column: "DISCOUNT_AMOUNT"
+            transform: "DIRECT"
+
+          - source_column: "SHIP_METHOD"
+            target_column: "SHIPPING_METHOD"
+            transform: "DIRECT"
+
+          - source_column: "CREATED_DT"
+            target_column: "CREATED_AT"
+            transform: "CAST_TIMESTAMP"
+
+          - source_column: null
+            target_column: "SOURCE_SYSTEM"
+            transform: "CONSTANT"
+            value: "legacy_oracle"
+
+      - system_id: "legacy_sqlserver"
+        source_table: "dbo.SalesOrders"
+        mappings:
+          - source_column: "SalesOrderID"
+            target_column: "SOURCE_ID"
+            transform: "CAST_TO_VARCHAR"
+
+          - source_column: "SalesOrderID"
+            target_column: "ORDER_BK"
+            transform: "PREFIX"
+            prefix: "SQL-"
+
+          - source_column: "CustomerID"
+            target_column: "CUSTOMER_SK"
+            transform: "SURROGATE_KEY_LOOKUP"
+            lookup_table: "DIM_CUSTOMER"
+            lookup_source_system: "legacy_sqlserver"
+            lookup_source_column: "SOURCE_ID"
+
+          - source_column: "OrderDate"
+            target_column: "ORDER_DATE"
+            transform: "CAST_DATE"
+
+          - source_column: "ShipDate"
+            target_column: "SHIP_DATE"
+            transform: "CAST_DATE"
+
+          - source_column: "OrderStatus"
+            target_column: "ORDER_STATUS"
+            transform: "DIRECT"
+
+          - source_column: "TotalAmount"
+            target_column: "ORDER_TOTAL"
+            transform: "DIRECT"
+
+          - source_column: "TaxAmount"
+            target_column: "TAX_AMOUNT"
+            transform: "DIRECT"
+
+          - source_column: "DiscountAmount"
+            target_column: "DISCOUNT_AMOUNT"
+            transform: "DIRECT"
+
+          - source_column: "ShippingMethod"
+            target_column: "SHIPPING_METHOD"
+            transform: "DIRECT"
+
+          - source_column: "CreatedDate"
+            target_column: "CREATED_AT"
+            transform: "CAST_TIMESTAMP"
+
+          - source_column: null
+            target_column: "SOURCE_SYSTEM"
+            transform: "CONSTANT"
+            value: "legacy_sqlserver"
+
+    generated_columns:
+      - column: "SALES_ORDER_SK"
+        strategy: "SEQUENCE"
+      - column: "LOADED_AT"
+        strategy: "CURRENT_TIMESTAMP"
+
+  # ===========================================================================
+  # FACT_SALES_ORDER_LINE — Order Line Items
+  # ===========================================================================
+  - target_table: "INTEGRATED.FACT_SALES_ORDER_LINE"
+    sources:
+      - system_id: "legacy_oracle"
+        source_table: "ERP_OWNER.ORDER_DETAIL"
+        mappings:
+          - source_column: "ORDER_DTL_ID"
+            target_column: "SOURCE_ID"
+            transform: "CAST_TO_VARCHAR"
+
+          - source_column: "ORDER_DTL_ID"
+            target_column: "LINE_BK"
+            transform: "PREFIX"
+            prefix: "ORA-"
+
+          - source_column: "ORDER_ID"
+            target_column: "SALES_ORDER_SK"
+            transform: "SURROGATE_KEY_LOOKUP"
+            lookup_table: "FACT_SALES_ORDER"
+            lookup_source_system: "legacy_oracle"
+            lookup_source_column: "SOURCE_ID"
+
+          - source_column: "PROD_ID"
+            target_column: "PRODUCT_SK"
+            transform: "SURROGATE_KEY_LOOKUP"
+            lookup_table: "DIM_PRODUCT"
+            lookup_source_system: "legacy_oracle"
+            lookup_source_column: "SOURCE_ID"
+
+          - source_column: "QTY"
+            target_column: "QUANTITY"
+            transform: "DIRECT"
+
+          - source_column: "UNIT_PRICE"
+            target_column: "UNIT_PRICE"
+            transform: "DIRECT"
+
+          - source_column: "LINE_TOTAL"
+            target_column: "LINE_TOTAL"
+            transform: "DIRECT"
+
+          - source_column: "DISCOUNT_PCT"
+            target_column: "DISCOUNT_PERCENT"
+            transform: "DIRECT"
+
+          - source_column: null
+            target_column: "SOURCE_SYSTEM"
+            transform: "CONSTANT"
+            value: "legacy_oracle"
+
+      - system_id: "legacy_sqlserver"
+        source_table: "dbo.SalesOrderDetails"
+        mappings:
+          - source_column: "SalesOrderDetailID"
+            target_column: "SOURCE_ID"
+            transform: "CAST_TO_VARCHAR"
+
+          - source_column: "SalesOrderDetailID"
+            target_column: "LINE_BK"
+            transform: "PREFIX"
+            prefix: "SQL-"
+
+          - source_column: "SalesOrderID"
+            target_column: "SALES_ORDER_SK"
+            transform: "SURROGATE_KEY_LOOKUP"
+            lookup_table: "FACT_SALES_ORDER"
+            lookup_source_system: "legacy_sqlserver"
+            lookup_source_column: "SOURCE_ID"
+
+          - source_column: "ProductID"
+            target_column: "PRODUCT_SK"
+            transform: "SURROGATE_KEY_LOOKUP"
+            lookup_table: "DIM_PRODUCT"
+            lookup_source_system: "legacy_sqlserver"
+            lookup_source_column: "SOURCE_ID"
+
+          - source_column: "Quantity"
+            target_column: "QUANTITY"
+            transform: "DIRECT"
+
+          - source_column: "UnitPrice"
+            target_column: "UNIT_PRICE"
+            transform: "DIRECT"
+
+          - source_column: "LineTotal"
+            target_column: "LINE_TOTAL"
+            transform: "DIRECT"
+
+          - source_column: "DiscountPercent"
+            target_column: "DISCOUNT_PERCENT"
+            transform: "DIRECT"
+
+          - source_column: null
+            target_column: "SOURCE_SYSTEM"
+            transform: "CONSTANT"
+            value: "legacy_sqlserver"
+
+    generated_columns:
+      - column: "SALES_ORDER_LINE_SK"
+        strategy: "SEQUENCE"
+      - column: "LOADED_AT"
+        strategy: "CURRENT_TIMESTAMP"

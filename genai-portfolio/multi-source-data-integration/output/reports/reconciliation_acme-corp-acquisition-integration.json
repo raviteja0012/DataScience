@@ -1,0 +1,199 @@
+{
+  "pipeline_name": "acme-corp-acquisition-integration",
+  "generated_at": "2026-02-23T02:46:55.464606+00:00",
+  "overall_passed": false,
+  "entities": [
+    {
+      "entity": "customer",
+      "passed": true,
+      "count_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "total_row_count",
+            "expected": 1000,
+            "actual": 1000,
+            "delta": 0,
+            "passed": true
+          },
+          {
+            "name": "source_count_legacy_oracle",
+            "expected": 500,
+            "actual": 500,
+            "delta": 0,
+            "passed": true
+          },
+          {
+            "name": "source_count_legacy_sqlserver",
+            "expected": 500,
+            "actual": 500,
+            "delta": 0,
+            "passed": true
+          }
+        ]
+      },
+      "value_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "customer_type_distribution",
+            "type": "distribution",
+            "column": "CUSTOMER_TYPE",
+            "passed": true
+          },
+          {
+            "name": "records_per_source",
+            "type": "group_count",
+            "column": "SOURCE_SYSTEM",
+            "passed": true
+          }
+        ]
+      },
+      "hash_comparison": {
+        "passed": true,
+        "matching_rows": 1,
+        "missing_in_target": 0,
+        "missing_in_source": 0,
+        "value_mismatches": 0,
+        "match_pct": 0.1
+      }
+    },
+    {
+      "entity": "product",
+      "passed": false,
+      "count_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "total_row_count",
+            "expected": 143,
+            "actual": 143,
+            "delta": 0,
+            "passed": true
+          },
+          {
+            "name": "source_count_legacy_oracle",
+            "expected": 71,
+            "actual": 71,
+            "delta": 0,
+            "passed": true
+          },
+          {
+            "name": "source_count_legacy_sqlserver",
+            "expected": 72,
+            "actual": 72,
+            "delta": 0,
+            "passed": true
+          }
+        ]
+      },
+      "value_reconciliation": {
+        "passed": false,
+        "checks": [
+          {
+            "name": "total_list_price",
+            "type": "sum",
+            "column": "LIST_PRICE",
+            "passed": false
+          },
+          {
+            "name": "price_range",
+            "type": "min",
+            "column": "LIST_PRICE",
+            "passed": true
+          }
+        ]
+      },
+      "hash_comparison": {
+        "passed": true,
+        "matching_rows": 1,
+        "missing_in_target": 0,
+        "missing_in_source": 0,
+        "value_mismatches": 0,
+        "match_pct": 0.7
+      }
+    },
+    {
+      "entity": "sales_order",
+      "passed": true,
+      "count_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "total_row_count",
+            "expected": 0,
+            "actual": 0,
+            "delta": 0,
+            "passed": true
+          }
+        ]
+      },
+      "value_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "total_order_amount",
+            "type": "sum",
+            "column": "ORDER_TOTAL",
+            "passed": true
+          },
+          {
+            "name": "total_tax_amount",
+            "type": "sum",
+            "column": "TAX_AMOUNT",
+            "passed": true
+          }
+        ]
+      },
+      "hash_comparison": {
+        "passed": true,
+        "matching_rows": 0,
+        "missing_in_target": 0,
+        "missing_in_source": 0,
+        "value_mismatches": 0,
+        "match_pct": 0.0
+      }
+    },
+    {
+      "entity": "sales_order_line",
+      "passed": true,
+      "count_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "total_row_count",
+            "expected": 0,
+            "actual": 0,
+            "delta": 0,
+            "passed": true
+          }
+        ]
+      },
+      "value_reconciliation": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "total_line_amount",
+            "type": "sum",
+            "column": "LINE_TOTAL",
+            "passed": true
+          },
+          {
+            "name": "total_quantity",
+            "type": "sum",
+            "column": "QUANTITY",
+            "passed": true
+          }
+        ]
+      },
+      "hash_comparison": {
+        "passed": true,
+        "matching_rows": 0,
+        "missing_in_target": 0,
+        "missing_in_source": 0,
+        "value_mismatches": 0,
+        "match_pct": 0.0
+      }
+    }
+  ]
+}

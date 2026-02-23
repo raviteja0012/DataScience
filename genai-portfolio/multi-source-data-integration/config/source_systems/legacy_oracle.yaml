@@ -1,0 +1,126 @@
+# =============================================================================
+# Source System: Legacy Oracle (Acquired Company — AcmeCorp ERP)
+# =============================================================================
+# Oracle 12c on-prem system acquired through M&A. Contains the master customer
+# and transaction data for the west-coast division (2008–2024).
+
+system:
+  id: "legacy_oracle"
+  name: "AcmeCorp Oracle ERP"
+  platform: "oracle"
+  version: "12.2.0.1"
+  description: "Primary ERP for the acquired west-coast division"
+  owner: "data-engineering@acmecorp.com"
+  acquired_date: "2024-03-15"
+
+connection:
+  driver: "oracle+cx_oracle"
+  host: "ora-erp-prod.acmecorp.internal"
+  port: 1521
+  service_name: "ERPPROD"
+  username: "${ORACLE_USER}"
+  password: "${ORACLE_PASS}"
+  schema: "ERP_OWNER"
+  pool_size: 5
+  pool_timeout: 30
+
+schemas:
+  - name: "ERP_OWNER"
+    tables:
+      - name: "CUST_MASTER"
+        description: "Customer master records"
+        estimated_rows: 2450000
+        primary_key: "CUST_ID"
+        columns:
+          - { name: "CUST_ID",       type: "NUMBER(12)",      nullable: false }
+          - { name: "CUST_NM",       type: "VARCHAR2(200)",   nullable: false }
+          - { name: "CUST_ADDR_1",   type: "VARCHAR2(200)",   nullable: true  }
+          - { name: "CUST_ADDR_2",   type: "VARCHAR2(200)",   nullable: true  }
+          - { name: "CUST_CITY",     type: "VARCHAR2(100)",   nullable: true  }
+          - { name: "CUST_ST",       type: "CHAR(2)",         nullable: true  }
+          - { name: "CUST_ZIP",      type: "VARCHAR2(10)",    nullable: true  }
+          - { name: "CUST_CNTRY",    type: "CHAR(3)",         nullable: true  }
+          - { name: "CUST_EMAIL",    type: "VARCHAR2(255)",   nullable: true  }
+          - { name: "CUST_PHONE",    type: "VARCHAR2(20)",    nullable: true  }
+          - { name: "TAX_ID",        type: "VARCHAR2(20)",    nullable: true  }
+          - { name: "CUST_TYPE",     type: "CHAR(1)",         nullable: false }  # B=Business, I=Individual
+          - { name: "CUST_STATUS",   type: "CHAR(1)",         nullable: false }  # A=Active, I=Inactive
+          - { name: "CREATED_DT",    type: "DATE",            nullable: false }
+          - { name: "MODIFIED_DT",   type: "DATE",            nullable: true  }
+          - { name: "CREATED_BY",    type: "VARCHAR2(50)",    nullable: true  }
+
+      - name: "PRODUCT_CATALOG"
+        description: "Product catalog"
+        estimated_rows: 85000
+        primary_key: "PROD_ID"
+        columns:
+          - { name: "PROD_ID",       type: "NUMBER(10)",      nullable: false }
+          - { name: "PROD_SKU",      type: "VARCHAR2(30)",    nullable: false }
+          - { name: "PROD_DESC",     type: "VARCHAR2(500)",   nullable: false }
+          - { name: "PROD_CAT_CD",   type: "VARCHAR2(10)",    nullable: true  }
+          - { name: "UNIT_PRICE",    type: "NUMBER(12,2)",    nullable: false }
+          - { name: "UNIT_COST",     type: "NUMBER(12,2)",    nullable: true  }
+          - { name: "WEIGHT_KG",     type: "NUMBER(8,3)",     nullable: true  }
+          - { name: "IS_ACTIVE",     type: "CHAR(1)",         nullable: false }
+          - { name: "CREATED_DT",    type: "DATE",            nullable: false }
+          - { name: "MODIFIED_DT",   type: "DATE",            nullable: true  }
+
+      - name: "ORDER_HEADER"
+        description: "Sales order headers"
+        estimated_rows: 18500000
+        primary_key: "ORDER_ID"
+        columns:
+          - { name: "ORDER_ID",      type: "NUMBER(15)",      nullable: false }
+          - { name: "CUST_ID",       type: "NUMBER(12)",      nullable: false }
+          - { name: "ORDER_DT",      type: "DATE",            nullable: false }
+          - { name: "SHIP_DT",       type: "DATE",            nullable: true  }
+          - { name: "ORDER_STATUS",  type: "VARCHAR2(2)",     nullable: false }
+          - { name: "ORDER_TOTAL",   type: "NUMBER(14,2)",    nullable: false }
+          - { name: "TAX_AMT",       type: "NUMBER(12,2)",    nullable: true  }
+          - { name: "DISCOUNT_AMT",  type: "NUMBER(12,2)",    nullable: true  }
+          - { name: "SHIP_METHOD",   type: "VARCHAR2(20)",    nullable: true  }
+          - { name: "CREATED_DT",    type: "DATE",            nullable: false }
+
+      - name: "ORDER_DETAIL"
+        description: "Sales order line items"
+        estimated_rows: 67000000
+        primary_key: "ORDER_DTL_ID"
+        columns:
+          - { name: "ORDER_DTL_ID",  type: "NUMBER(18)",      nullable: false }
+          - { name: "ORDER_ID",      type: "NUMBER(15)",      nullable: false }
+          - { name: "PROD_ID",       type: "NUMBER(10)",      nullable: false }
+          - { name: "QTY",           type: "NUMBER(8)",       nullable: false }
+          - { name: "UNIT_PRICE",    type: "NUMBER(12,2)",    nullable: false }
+          - { name: "LINE_TOTAL",    type: "NUMBER(14,2)",    nullable: false }
+          - { name: "DISCOUNT_PCT",  type: "NUMBER(5,2)",     nullable: true  }
+
+    foreign_keys:
+      - name: "FK_ORDER_CUST"
+        source_table: "ORDER_HEADER"
+        source_column: "CUST_ID"
+        target_table: "CUST_MASTER"
+        target_column: "CUST_ID"
+
+      - name: "FK_ORDERDTL_ORDER"
+        source_table: "ORDER_DETAIL"
+        source_column: "ORDER_ID"
+        target_table: "ORDER_HEADER"
+        target_column: "ORDER_ID"
+
+      - name: "FK_ORDERDTL_PROD"
+        source_table: "ORDER_DETAIL"
+        source_column: "PROD_ID"
+        target_table: "PRODUCT_CATALOG"
+        target_column: "PROD_ID"
+
+data_characteristics:
+  encoding: "AL32UTF8"
+  date_format: "YYYY-MM-DD HH24:MI:SS"
+  decimal_separator: "."
+  null_representation: null       # native NULL
+  boolean_representation: "'Y'/'N' or '1'/'0'"
+  known_issues:
+    - "CUST_PHONE has inconsistent formatting (some with dashes, some without)"
+    - "TAX_ID field has ~12% NULL rate for business customers"
+    - "ORDER_STATUS uses non-standard codes: 'OP','CL','CN','RT','HD'"
+    - "Duplicate customer records exist due to legacy data entry issues"
