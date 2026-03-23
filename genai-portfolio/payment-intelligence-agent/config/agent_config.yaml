@@ -1,0 +1,140 @@
+# Payment Intelligence Agent - Orchestration Configuration
+# Controls agent behavior, routing, and subsystem integration.
+
+agent:
+  name: "Payment Intelligence Agent"
+  version: "1.0.0"
+  description: >
+    Cortex-powered agent for payment analytics, PCI compliance,
+    and fraud anomaly detection.
+
+  # Cortex model used for LLM inference
+  cortex_model: "mistral-large2"
+  temperature: 0.1
+  max_tokens: 4096
+
+intent_classification:
+  # Confidence threshold for routing decisions
+  confidence_threshold: 0.65
+
+  # Intent categories with keyword anchors
+  intents:
+    analytics:
+      description: "NL-to-SQL payment data queries"
+      keywords:
+        - "transaction"
+        - "revenue"
+        - "merchant"
+        - "volume"
+        - "settlement"
+        - "chargeback"
+        - "average"
+        - "total"
+        - "count"
+        - "top"
+        - "bottom"
+        - "trend"
+        - "compare"
+        - "growth"
+        - "payment method"
+        - "decline rate"
+        - "approval rate"
+        - "refund"
+        - "amount"
+        - "fee"
+      examples:
+        - "Show me top 10 merchants by transaction volume"
+        - "What is the average settlement time by payment method?"
+        - "How many chargebacks occurred last month?"
+        - "Compare revenue across regions"
+
+    compliance:
+      description: "PCI-DSS compliance and regulatory questions"
+      keywords:
+        - "PCI"
+        - "compliance"
+        - "requirement"
+        - "cardholder"
+        - "encryption"
+        - "firewall"
+        - "access control"
+        - "audit"
+        - "vulnerability"
+        - "penetration test"
+        - "security policy"
+        - "data retention"
+        - "key management"
+        - "tokenization"
+        - "scope"
+        - "DSS"
+        - "SAQ"
+        - "QSA"
+      examples:
+        - "What are the requirements for storing cardholder data?"
+        - "How should encryption keys be managed?"
+        - "What does PCI DSS say about network segmentation?"
+
+    anomaly:
+      description: "Fraud detection and anomaly analysis"
+      keywords:
+        - "anomaly"
+        - "fraud"
+        - "suspicious"
+        - "unusual"
+        - "spike"
+        - "outlier"
+        - "pattern"
+        - "velocity"
+        - "geographic"
+        - "deviation"
+        - "alert"
+        - "risk"
+        - "threshold"
+        - "detection"
+        - "flagged"
+      examples:
+        - "Are there any anomalies in today's transactions?"
+        - "Show me suspicious transaction patterns"
+        - "What merchants have unusual chargeback rates?"
+
+context:
+  # Maximum conversation turns retained in memory
+  max_history_turns: 20
+  # Whether to carry entity references across turns
+  entity_tracking: true
+  # Session timeout in minutes
+  session_timeout_minutes: 30
+
+response:
+  # Include SQL in analytics responses
+  show_sql: true
+  # Maximum rows displayed in tables
+  max_display_rows: 100
+  # Default chart library
+  chart_library: "plotly"
+  # Include confidence scores in responses
+  show_confidence: false
+
+guardrails:
+  # Maximum query execution time (seconds)
+  query_timeout_seconds: 30
+  # Blocked SQL operations
+  blocked_operations:
+    - "DROP"
+    - "DELETE"
+    - "TRUNCATE"
+    - "ALTER"
+    - "CREATE"
+    - "INSERT"
+    - "UPDATE"
+    - "MERGE"
+    - "GRANT"
+    - "REVOKE"
+  # PII fields that must be masked in output
+  pii_fields:
+    - "card_number"
+    - "card_pan"
+    - "cvv"
+    - "ssn"
+    - "account_number"
+    - "routing_number"

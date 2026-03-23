@@ -1,0 +1,130 @@
+# =============================================================================
+# Source System: Legacy SQL Server (Acquired Company — BetaTech CRM)
+# =============================================================================
+# SQL Server 2019 CRM system from BetaTech acquisition. Contains customer
+# contact data and sales pipeline for the east-coast division (2012–2024).
+
+system:
+  id: "legacy_sqlserver"
+  name: "BetaTech SQL Server CRM"
+  platform: "sqlserver"
+  version: "2019"
+  description: "CRM system for the acquired east-coast division"
+  owner: "it-ops@betatech.com"
+  acquired_date: "2024-06-01"
+
+connection:
+  driver: "mssql+pyodbc"
+  host: "sql-crm-prod.betatech.internal"
+  port: 1433
+  database: "CRM_PROD"
+  username: "${MSSQL_USER}"
+  password: "${MSSQL_PASS}"
+  schema: "dbo"
+  pool_size: 5
+  pool_timeout: 30
+  driver_extra: "ODBC Driver 17 for SQL Server"
+
+schemas:
+  - name: "dbo"
+    tables:
+      - name: "Customers"
+        description: "Customer contact and account information"
+        estimated_rows: 1850000
+        primary_key: "CustomerID"
+        columns:
+          - { name: "CustomerID",      type: "INT",             nullable: false }
+          - { name: "FirstName",       type: "NVARCHAR(100)",   nullable: true  }
+          - { name: "LastName",        type: "NVARCHAR(100)",   nullable: true  }
+          - { name: "CompanyName",     type: "NVARCHAR(250)",   nullable: true  }
+          - { name: "EmailAddress",    type: "NVARCHAR(255)",   nullable: true  }
+          - { name: "PhoneNumber",     type: "NVARCHAR(25)",    nullable: true  }
+          - { name: "AddressLine1",    type: "NVARCHAR(200)",   nullable: true  }
+          - { name: "AddressLine2",    type: "NVARCHAR(200)",   nullable: true  }
+          - { name: "City",            type: "NVARCHAR(100)",   nullable: true  }
+          - { name: "StateProvince",   type: "NVARCHAR(50)",    nullable: true  }
+          - { name: "PostalCode",      type: "NVARCHAR(15)",    nullable: true  }
+          - { name: "CountryCode",     type: "NCHAR(2)",        nullable: true  }
+          - { name: "TaxIdentifier",   type: "NVARCHAR(25)",    nullable: true  }
+          - { name: "CustomerType",    type: "NVARCHAR(20)",    nullable: false }  # Business, Individual, Government
+          - { name: "Status",          type: "NVARCHAR(15)",    nullable: false }  # Active, Inactive, Suspended
+          - { name: "CreatedDate",     type: "DATETIME2",       nullable: false }
+          - { name: "ModifiedDate",    type: "DATETIME2",       nullable: true  }
+          - { name: "CreatedBy",       type: "NVARCHAR(50)",    nullable: true  }
+
+      - name: "Products"
+        description: "Product catalog"
+        estimated_rows: 42000
+        primary_key: "ProductID"
+        columns:
+          - { name: "ProductID",       type: "INT",             nullable: false }
+          - { name: "SKU",             type: "NVARCHAR(30)",    nullable: false }
+          - { name: "ProductName",     type: "NVARCHAR(300)",   nullable: false }
+          - { name: "CategoryCode",    type: "NVARCHAR(15)",    nullable: true  }
+          - { name: "ListPrice",       type: "DECIMAL(12,2)",   nullable: false }
+          - { name: "StandardCost",    type: "DECIMAL(12,2)",   nullable: true  }
+          - { name: "WeightKg",        type: "DECIMAL(8,3)",    nullable: true  }
+          - { name: "IsActive",        type: "BIT",             nullable: false }
+          - { name: "CreatedDate",     type: "DATETIME2",       nullable: false }
+          - { name: "ModifiedDate",    type: "DATETIME2",       nullable: true  }
+
+      - name: "SalesOrders"
+        description: "Sales order headers"
+        estimated_rows: 12200000
+        primary_key: "SalesOrderID"
+        columns:
+          - { name: "SalesOrderID",    type: "BIGINT",          nullable: false }
+          - { name: "CustomerID",      type: "INT",             nullable: false }
+          - { name: "OrderDate",       type: "DATETIME2",       nullable: false }
+          - { name: "ShipDate",        type: "DATETIME2",       nullable: true  }
+          - { name: "OrderStatus",     type: "NVARCHAR(20)",    nullable: false }  # Open, Closed, Cancelled, Returned
+          - { name: "TotalAmount",     type: "DECIMAL(14,2)",   nullable: false }
+          - { name: "TaxAmount",       type: "DECIMAL(12,2)",   nullable: true  }
+          - { name: "DiscountAmount",  type: "DECIMAL(12,2)",   nullable: true  }
+          - { name: "ShippingMethod",  type: "NVARCHAR(30)",    nullable: true  }
+          - { name: "CreatedDate",     type: "DATETIME2",       nullable: false }
+
+      - name: "SalesOrderDetails"
+        description: "Sales order line items"
+        estimated_rows: 48500000
+        primary_key: "SalesOrderDetailID"
+        columns:
+          - { name: "SalesOrderDetailID", type: "BIGINT",       nullable: false }
+          - { name: "SalesOrderID",    type: "BIGINT",          nullable: false }
+          - { name: "ProductID",       type: "INT",             nullable: false }
+          - { name: "Quantity",        type: "INT",             nullable: false }
+          - { name: "UnitPrice",       type: "DECIMAL(12,2)",   nullable: false }
+          - { name: "LineTotal",       type: "DECIMAL(14,2)",   nullable: false }
+          - { name: "DiscountPercent", type: "DECIMAL(5,2)",    nullable: true  }
+
+    foreign_keys:
+      - name: "FK_SalesOrders_Customers"
+        source_table: "SalesOrders"
+        source_column: "CustomerID"
+        target_table: "Customers"
+        target_column: "CustomerID"
+
+      - name: "FK_SalesOrderDetails_SalesOrders"
+        source_table: "SalesOrderDetails"
+        source_column: "SalesOrderID"
+        target_table: "SalesOrders"
+        target_column: "SalesOrderID"
+
+      - name: "FK_SalesOrderDetails_Products"
+        source_table: "SalesOrderDetails"
+        source_column: "ProductID"
+        target_table: "Products"
+        target_column: "ProductID"
+
+data_characteristics:
+  encoding: "UTF-8"
+  date_format: "YYYY-MM-DDTHH:MM:SS.nnnnnnn"
+  decimal_separator: "."
+  null_representation: null
+  boolean_representation: "BIT (0/1)"
+  known_issues:
+    - "FirstName/LastName split is inconsistent — some CompanyName entries in LastName"
+    - "CountryCode uses ISO 3166-1 alpha-2 (2 chars) vs Oracle's alpha-3 (3 chars)"
+    - "CustomerType uses full words vs Oracle's single-character codes"
+    - "~8% of EmailAddress values appear to be test/fake addresses"
+    - "PhoneNumber formatting varies: (xxx) xxx-xxxx, xxx-xxx-xxxx, +1xxxxxxxxxx"

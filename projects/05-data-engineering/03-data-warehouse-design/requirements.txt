@@ -1,0 +1,17 @@
+# Data Warehouse Design - Requirements
+# All dependencies are Python standard library
+# No external packages needed
+#
+# Standard library modules used:
+# - sqlite3
+# - os, sys
+# - json
+# - csv
+# - logging
+# - tempfile
+# - random
+# - hashlib
+# - time
+# - datetime
+# - collections
+# - typing

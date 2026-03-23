@@ -1,0 +1,174 @@
+# Settlement & Reconciliation Rules
+# Governs the three-way reconciliation between biller records,
+# payment platform records, and bank/processor settlement files.
+
+reconciliation:
+  # Three-way match criteria
+  match_keys:
+    primary: "transaction_id"
+    secondary: ["amount", "settlement_date"]
+    fallback: ["customer_account_id", "amount", "payment_date"]
+
+  # Tolerance thresholds
+  tolerances:
+    amount:
+      absolute: 0.01          # Penny-level tolerance for rounding
+      percentage: 0.0          # No percentage tolerance by default
+    date:
+      days: 2                  # Allow up to 2 calendar days offset for settlement timing
+    timestamp:
+      seconds: 3600            # 1-hour tolerance on exact timestamps
+
+  # Match status definitions
+  statuses:
+    matched: "All three sources agree on key fields"
+    partial_match: "Two of three sources agree"
+    amount_mismatch: "Transaction found in all sources but amounts differ beyond tolerance"
+    date_mismatch: "Transaction found in all sources but dates differ beyond tolerance"
+    missing_biller: "Transaction in platform and bank but not in biller records"
+    missing_platform: "Transaction in biller and bank but not in platform records"
+    missing_bank: "Transaction in biller and platform but not in bank settlement"
+    duplicate: "Multiple records found for the same transaction ID"
+    orphan: "Record exists in only one source with no counterpart"
+
+exception_handling:
+  # Classification of exceptions by severity
+  severity_levels:
+    critical:
+      - "missing_bank"         # Money collected but not settled - cash flow impact
+      - "duplicate"            # Potential double-charge to customer
+    high:
+      - "amount_mismatch"      # Revenue leakage or overcharge risk
+      - "missing_platform"     # Settlement without platform record - audit gap
+    medium:
+      - "missing_biller"       # Biller posting lag, usually self-corrects
+      - "date_mismatch"        # Timing issue, typically benign
+    low:
+      - "orphan"               # Stale test records or cancelled transactions
+      - "partial_match"        # Usually resolves within T+3
+
+  # Auto-resolution rules
+  auto_resolve:
+    - condition: "amount_mismatch AND abs(difference) <= 0.01"
+      action: "auto_match"
+      reason: "Rounding difference within penny tolerance"
+
+    - condition: "date_mismatch AND day_difference <= 1"
+      action: "auto_match"
+      reason: "Next-day settlement timing"
+
+    - condition: "missing_biller AND record_age_hours <= 24"
+      action: "defer"
+      reason: "Biller posting lag - recheck in next cycle"
+      recheck_hours: 4
+
+    - condition: "orphan AND record_age_hours >= 720"
+      action: "write_off"
+      reason: "Stale orphan record exceeds 30-day threshold"
+      requires_approval: true
+
+  # Escalation rules
+  escalation:
+    - severity: "critical"
+      initial_response_minutes: 15
+      escalation_chain:
+        - role: "settlement_analyst"
+          after_minutes: 0
+        - role: "settlement_manager"
+          after_minutes: 30
+        - role: "finance_director"
+          after_minutes: 120
+      notification_channels: ["email", "sms", "pagerduty"]
+
+    - severity: "high"
+      initial_response_minutes: 60
+      escalation_chain:
+        - role: "settlement_analyst"
+          after_minutes: 0
+        - role: "settlement_manager"
+          after_minutes: 240
+      notification_channels: ["email"]
+
+    - severity: "medium"
+      initial_response_minutes: 480
+      escalation_chain:
+        - role: "settlement_analyst"
+          after_minutes: 0
+      notification_channels: ["email"]
+
+    - severity: "low"
+      initial_response_minutes: 1440
+      escalation_chain:
+        - role: "settlement_analyst"
+          after_minutes: 0
+      notification_channels: ["email"]
+
+settlement_processing:
+  # Batch window configuration
+  batch_windows:
+    - name: "morning_settlement"
+      cron: "0 6 * * 1-5"      # 6 AM weekdays
+      description: "Primary settlement batch - processes previous day"
+    - name: "afternoon_recon"
+      cron: "0 14 * * 1-5"     # 2 PM weekdays
+      description: "Afternoon reconciliation pass for late-arriving records"
+    - name: "eod_sweep"
+      cron: "0 22 * * 1-5"     # 10 PM weekdays
+      description: "End-of-day sweep for any remaining unmatched items"
+
+  # Settlement file formats
+  file_formats:
+    biller_extract:
+      format: "fixed_width"
+      encoding: "UTF-8"
+      record_delimiter: "\n"
+      header_rows: 2
+      trailer_rows: 1
+      fields:
+        - name: "record_type"
+          start: 1
+          length: 2
+        - name: "transaction_id"
+          start: 3
+          length: 20
+        - name: "account_id"
+          start: 23
+          length: 12
+        - name: "amount"
+          start: 35
+          length: 12
+          decimal_places: 2
+        - name: "payment_date"
+          start: 47
+          length: 8
+          format: "YYYYMMDD"
+
+    platform_extract:
+      format: "csv"
+      encoding: "UTF-8"
+      delimiter: ","
+      quote_char: '"'
+      header: true
+
+    bank_settlement:
+      format: "nacha"
+      encoding: "ASCII"
+      description: "NACHA/ACH standard settlement file"
+
+  # Reporting
+  reports:
+    daily_reconciliation:
+      output_format: "csv"
+      include_matched: false
+      include_exceptions: true
+      retention_days: 90
+
+    monthly_summary:
+      output_format: "json"
+      group_by: ["biller_id", "exception_type"]
+      retention_days: 365
+
+    audit_trail:
+      output_format: "json"
+      include_all_records: true
+      retention_days: 2555   # 7 years for financial audit compliance

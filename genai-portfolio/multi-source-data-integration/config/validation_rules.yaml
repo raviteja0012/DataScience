@@ -1,0 +1,235 @@
+# =============================================================================
+# Reconciliation & Validation Rules
+# =============================================================================
+# Defines post-migration validation rules for each entity.
+
+version: "1.0"
+
+global_settings:
+  count_tolerance_pct: 0.0       # exact row count match required
+  value_tolerance_pct: 0.01      # 0.01% tolerance on aggregates
+  hash_algorithm: "sha256"
+  fail_on_first_error: false
+  max_discrepancies_per_entity: 1000
+  sample_rate: null              # null = full validation
+
+entities:
+  # ---------------------------------------------------------------------------
+  # DIM_CUSTOMER validation
+  # ---------------------------------------------------------------------------
+  - entity: "customer"
+    target_table: "INTEGRATED.DIM_CUSTOMER"
+    sources:
+      - system_id: "legacy_oracle"
+        source_table: "ERP_OWNER.CUST_MASTER"
+      - system_id: "legacy_sqlserver"
+        source_table: "dbo.Customers"
+
+    count_checks:
+      - name: "total_row_count"
+        description: "Sum of source rows must equal target rows (minus deduped records)"
+        tolerance_pct: 0.0
+        allow_dedup_delta: true
+        dedup_log_table: "INTEGRATED.IDENTITY_RESOLUTION_LOG"
+
+      - name: "active_customer_count"
+        description: "Active customer count across sources"
+        source_filters:
+          legacy_oracle: "CUST_STATUS = 'A'"
+          legacy_sqlserver: "Status = 'Active'"
+        target_filter: "STATUS = 'Active'"
+        tolerance_pct: 0.0
+
+    value_checks:
+      - name: "customer_type_distribution"
+        description: "Customer type distribution should match"
+        check_type: "distribution"
+        target_column: "CUSTOMER_TYPE"
+        tolerance_pct: 1.0
+
+      - name: "records_per_source"
+        description: "Record counts grouped by source system"
+        check_type: "group_count"
+        target_group_column: "SOURCE_SYSTEM"
+
+    completeness_checks:
+      - column: "EMAIL"
+        max_null_pct: 15.0
+        description: "Email should be populated for at least 85% of records"
+
+      - column: "PHONE"
+        max_null_pct: 20.0
+
+      - column: "FULL_ADDRESS"
+        max_null_pct: 10.0
+
+      - column: "TAX_ID"
+        max_null_pct: 25.0
+
+    hash_checks:
+      enabled: true
+      key_columns: ["SOURCE_SYSTEM", "SOURCE_ID"]
+      compare_columns:
+        - "CUSTOMER_NAME"
+        - "EMAIL"
+        - "PHONE"
+        - "FULL_ADDRESS"
+        - "CITY"
+        - "STATE_PROVINCE"
+        - "POSTAL_CODE"
+        - "CUSTOMER_TYPE"
+        - "STATUS"
+
+  # ---------------------------------------------------------------------------
+  # DIM_PRODUCT validation
+  # ---------------------------------------------------------------------------
+  - entity: "product"
+    target_table: "INTEGRATED.DIM_PRODUCT"
+    sources:
+      - system_id: "legacy_oracle"
+        source_table: "ERP_OWNER.PRODUCT_CATALOG"
+      - system_id: "legacy_sqlserver"
+        source_table: "dbo.Products"
+
+    count_checks:
+      - name: "total_row_count"
+        tolerance_pct: 0.0
+        allow_dedup_delta: true
+        dedup_log_table: "INTEGRATED.IDENTITY_RESOLUTION_LOG"
+
+      - name: "active_product_count"
+        source_filters:
+          legacy_oracle: "IS_ACTIVE = 'Y'"
+          legacy_sqlserver: "IsActive = 1"
+        target_filter: "IS_ACTIVE = TRUE"
+        tolerance_pct: 0.0
+
+    value_checks:
+      - name: "total_list_price"
+        check_type: "sum"
+        source_columns:
+          legacy_oracle: "UNIT_PRICE"
+          legacy_sqlserver: "ListPrice"
+        target_column: "LIST_PRICE"
+        tolerance_pct: 0.01
+
+      - name: "price_range"
+        check_type: "min_max"
+        target_column: "LIST_PRICE"
+        description: "Min/max prices should be within expected range"
+
+    hash_checks:
+      enabled: true
+      key_columns: ["SOURCE_SYSTEM", "SOURCE_ID"]
+      compare_columns:
+        - "SKU"
+        - "PRODUCT_NAME"
+        - "CATEGORY_CODE"
+        - "LIST_PRICE"
+        - "IS_ACTIVE"
+
+  # ---------------------------------------------------------------------------
+  # FACT_SALES_ORDER validation
+  # ---------------------------------------------------------------------------
+  - entity: "sales_order"
+    target_table: "INTEGRATED.FACT_SALES_ORDER"
+    sources:
+      - system_id: "legacy_oracle"
+        source_table: "ERP_OWNER.ORDER_HEADER"
+      - system_id: "legacy_sqlserver"
+        source_table: "dbo.SalesOrders"
+
+    count_checks:
+      - name: "total_row_count"
+        tolerance_pct: 0.0
+
+      - name: "orders_per_status"
+        check_type: "group_count"
+        target_group_column: "ORDER_STATUS"
+
+    value_checks:
+      - name: "total_order_amount"
+        check_type: "sum"
+        source_columns:
+          legacy_oracle: "ORDER_TOTAL"
+          legacy_sqlserver: "TotalAmount"
+        target_column: "ORDER_TOTAL"
+        tolerance_pct: 0.01
+        description: "Total order amounts must match within tolerance"
+
+      - name: "total_tax_amount"
+        check_type: "sum"
+        source_columns:
+          legacy_oracle: "TAX_AMT"
+          legacy_sqlserver: "TaxAmount"
+        target_column: "TAX_AMOUNT"
+        tolerance_pct: 0.01
+
+    referential_integrity_checks:
+      - name: "customer_fk_valid"
+        description: "All CUSTOMER_SK values must exist in DIM_CUSTOMER"
+        foreign_key_column: "CUSTOMER_SK"
+        reference_table: "INTEGRATED.DIM_CUSTOMER"
+        reference_column: "CUSTOMER_SK"
+
+    hash_checks:
+      enabled: true
+      key_columns: ["SOURCE_SYSTEM", "SOURCE_ID"]
+      compare_columns:
+        - "ORDER_DATE"
+        - "ORDER_STATUS"
+        - "ORDER_TOTAL"
+        - "TAX_AMOUNT"
+        - "DISCOUNT_AMOUNT"
+
+  # ---------------------------------------------------------------------------
+  # FACT_SALES_ORDER_LINE validation
+  # ---------------------------------------------------------------------------
+  - entity: "sales_order_line"
+    target_table: "INTEGRATED.FACT_SALES_ORDER_LINE"
+    sources:
+      - system_id: "legacy_oracle"
+        source_table: "ERP_OWNER.ORDER_DETAIL"
+      - system_id: "legacy_sqlserver"
+        source_table: "dbo.SalesOrderDetails"
+
+    count_checks:
+      - name: "total_row_count"
+        tolerance_pct: 0.0
+
+    value_checks:
+      - name: "total_line_amount"
+        check_type: "sum"
+        source_columns:
+          legacy_oracle: "LINE_TOTAL"
+          legacy_sqlserver: "LineTotal"
+        target_column: "LINE_TOTAL"
+        tolerance_pct: 0.01
+
+      - name: "total_quantity"
+        check_type: "sum"
+        source_columns:
+          legacy_oracle: "QTY"
+          legacy_sqlserver: "Quantity"
+        target_column: "QUANTITY"
+        tolerance_pct: 0.0
+
+    referential_integrity_checks:
+      - name: "order_fk_valid"
+        foreign_key_column: "SALES_ORDER_SK"
+        reference_table: "INTEGRATED.FACT_SALES_ORDER"
+        reference_column: "SALES_ORDER_SK"
+
+      - name: "product_fk_valid"
+        foreign_key_column: "PRODUCT_SK"
+        reference_table: "INTEGRATED.DIM_PRODUCT"
+        reference_column: "PRODUCT_SK"
+
+    hash_checks:
+      enabled: true
+      key_columns: ["SOURCE_SYSTEM", "SOURCE_ID"]
+      compare_columns:
+        - "QUANTITY"
+        - "UNIT_PRICE"
+        - "LINE_TOTAL"
+        - "DISCOUNT_PERCENT"

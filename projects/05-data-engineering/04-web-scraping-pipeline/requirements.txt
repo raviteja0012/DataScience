@@ -1,0 +1,19 @@
+# Web Scraping Pipeline - Requirements
+# Optional: BeautifulSoup for HTML parsing (falls back to built-in parser if absent)
+beautifulsoup4>=4.12.0
+
+# Standard library modules used:
+# - html.parser (fallback HTML parsing)
+# - urllib.parse
+# - time
+# - random
+# - csv
+# - json
+# - os, sys
+# - re
+# - logging
+# - tempfile
+# - hashlib
+# - datetime
+# - collections
+# - typing

@@ -1,0 +1,212 @@
+# =============================================================================
+# Entity Mapping: Customer
+# =============================================================================
+# Maps customer records from both acquired systems into the unified
+# DIM_CUSTOMER dimension in the target Snowflake warehouse.
+
+entity: "customer"
+target_table: "INTEGRATED.DIM_CUSTOMER"
+description: "Customer entity mapping from legacy Oracle and SQL Server systems"
+
+# ---------------------------------------------------------------------------
+# Source: Legacy Oracle (AcmeCorp ERP)
+# ---------------------------------------------------------------------------
+sources:
+  - system_id: "legacy_oracle"
+    source_table: "ERP_OWNER.CUST_MASTER"
+    mappings:
+      - source_column: "CUST_ID"
+        target_column: "SOURCE_ID"
+        transform: "CAST_TO_VARCHAR"
+
+      - source_column: "CUST_NM"
+        target_column: "CUSTOMER_NAME"
+        transform: "TRIM_UPPER_FIRST"
+
+      - source_columns: ["CUST_NM"]
+        target_column: "FIRST_NAME"
+        transform: "EXTRACT_FIRST_NAME"
+        description: "Extract first name from full name field"
+
+      - source_columns: ["CUST_NM"]
+        target_column: "LAST_NAME"
+        transform: "EXTRACT_LAST_NAME"
+        description: "Extract last name from full name field"
+
+      - source_column: null
+        target_column: "COMPANY_NAME"
+        transform: "CONDITIONAL"
+        condition: "CUST_TYPE = 'B'"
+        value_if_true: "CUST_NM"
+        value_if_false: null
+
+      - source_columns: ["CUST_ADDR_1", "CUST_ADDR_2"]
+        target_column: "FULL_ADDRESS"
+        transform: "CONCATENATE"
+        separator: ", "
+        skip_null: true
+
+      - source_column: "CUST_CITY"
+        target_column: "CITY"
+        transform: "DIRECT"
+
+      - source_column: "CUST_ST"
+        target_column: "STATE_PROVINCE"
+        transform: "DIRECT"
+
+      - source_column: "CUST_ZIP"
+        target_column: "POSTAL_CODE"
+        transform: "DIRECT"
+
+      - source_column: "CUST_CNTRY"
+        target_column: "COUNTRY_CODE"
+        transform: "DIRECT"
+        description: "Oracle uses ISO 3166-1 alpha-3 — 3 chars retained"
+
+      - source_column: "CUST_EMAIL"
+        target_column: "EMAIL"
+        transform: "LOWERCASE"
+
+      - source_column: "CUST_PHONE"
+        target_column: "PHONE"
+        transform: "NORMALIZE_PHONE"
+        format: "E.164"
+
+      - source_column: "TAX_ID"
+        target_column: "TAX_ID"
+        transform: "DIRECT"
+
+      - source_column: "CUST_TYPE"
+        target_column: "CUSTOMER_TYPE"
+        transform: "LOOKUP"
+        lookup_map:
+          "B": "Business"
+          "I": "Individual"
+        default: "Unknown"
+
+      - source_column: "CUST_STATUS"
+        target_column: "STATUS"
+        transform: "LOOKUP"
+        lookup_map:
+          "A": "Active"
+          "I": "Inactive"
+        default: "Unknown"
+
+      - source_column: "CREATED_DT"
+        target_column: "CREATED_AT"
+        transform: "CAST_TIMESTAMP"
+
+      - source_column: "MODIFIED_DT"
+        target_column: "UPDATED_AT"
+        transform: "CAST_TIMESTAMP"
+
+      - source_column: null
+        target_column: "SOURCE_SYSTEM"
+        transform: "CONSTANT"
+        value: "legacy_oracle"
+
+  # ---------------------------------------------------------------------------
+  # Source: Legacy SQL Server (BetaTech CRM)
+  # ---------------------------------------------------------------------------
+  - system_id: "legacy_sqlserver"
+    source_table: "dbo.Customers"
+    mappings:
+      - source_column: "CustomerID"
+        target_column: "SOURCE_ID"
+        transform: "CAST_TO_VARCHAR"
+
+      - source_columns: ["FirstName", "LastName"]
+        target_column: "CUSTOMER_NAME"
+        transform: "CONCATENATE"
+        separator: " "
+        skip_null: true
+
+      - source_column: "FirstName"
+        target_column: "FIRST_NAME"
+        transform: "DIRECT"
+
+      - source_column: "LastName"
+        target_column: "LAST_NAME"
+        transform: "DIRECT"
+
+      - source_column: "CompanyName"
+        target_column: "COMPANY_NAME"
+        transform: "DIRECT"
+
+      - source_columns: ["AddressLine1", "AddressLine2"]
+        target_column: "FULL_ADDRESS"
+        transform: "CONCATENATE"
+        separator: ", "
+        skip_null: true
+
+      - source_column: "City"
+        target_column: "CITY"
+        transform: "DIRECT"
+
+      - source_column: "StateProvince"
+        target_column: "STATE_PROVINCE"
+        transform: "DIRECT"
+
+      - source_column: "PostalCode"
+        target_column: "POSTAL_CODE"
+        transform: "DIRECT"
+
+      - source_column: "CountryCode"
+        target_column: "COUNTRY_CODE"
+        transform: "PAD_ISO_COUNTRY"
+        description: "SQL Server uses alpha-2 — pad to alpha-3 via lookup"
+
+      - source_column: "EmailAddress"
+        target_column: "EMAIL"
+        transform: "LOWERCASE"
+
+      - source_column: "PhoneNumber"
+        target_column: "PHONE"
+        transform: "NORMALIZE_PHONE"
+        format: "E.164"
+
+      - source_column: "TaxIdentifier"
+        target_column: "TAX_ID"
+        transform: "DIRECT"
+
+      - source_column: "CustomerType"
+        target_column: "CUSTOMER_TYPE"
+        transform: "DIRECT"
+        description: "Already uses full words: Business, Individual, Government"
+
+      - source_column: "Status"
+        target_column: "STATUS"
+        transform: "DIRECT"
+        description: "Already uses full words: Active, Inactive, Suspended"
+
+      - source_column: "CreatedDate"
+        target_column: "CREATED_AT"
+        transform: "CAST_TIMESTAMP"
+
+      - source_column: "ModifiedDate"
+        target_column: "UPDATED_AT"
+        transform: "CAST_TIMESTAMP"
+
+      - source_column: null
+        target_column: "SOURCE_SYSTEM"
+        transform: "CONSTANT"
+        value: "legacy_sqlserver"
+
+# ---------------------------------------------------------------------------
+# Columns populated at load time (not mapped from source)
+# ---------------------------------------------------------------------------
+generated_columns:
+  - column: "CUSTOMER_SK"
+    strategy: "SEQUENCE"
+    description: "Surrogate key generated during load"
+
+  - column: "CUSTOMER_BK"
+    strategy: "IDENTITY_RESOLUTION"
+    description: "Business key assigned during identity resolution"
+
+  - column: "LOADED_AT"
+    strategy: "CURRENT_TIMESTAMP"
+
+  - column: "MATCH_CONFIDENCE"
+    strategy: "IDENTITY_RESOLUTION"
+    description: "Confidence score from identity resolution engine"

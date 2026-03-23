@@ -1,0 +1,20 @@
+# Streaming Data Pipeline - Requirements
+# All dependencies are Python standard library
+# No external packages needed
+#
+# Standard library modules used:
+# - threading
+# - queue
+# - time
+# - random
+# - math
+# - json
+# - csv
+# - os, sys
+# - logging
+# - tempfile
+# - statistics
+# - datetime
+# - collections (deque, defaultdict)
+# - dataclasses
+# - typing
