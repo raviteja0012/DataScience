@@ -1,0 +1,127 @@
+# =============================================================================
+# Multi-Source Data Integration - docker-compose
+# =============================================================================
+# Run:   docker compose up --build
+# Logs:  docker compose logs -f data-integration
+#
+# The `oracle` and `mssql` services below are commented out by default.
+# Uncomment them when you want a self-contained end-to-end integration test.
+# =============================================================================
+version: "3.8"
+
+services:
+  data-integration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: multi-source-data-integration:latest
+    container_name: data-integration
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DEMO_MODE: ${DEMO_MODE:-true}
+      SOURCE_ORACLE_HOST: ${SOURCE_ORACLE_HOST:-}
+      SOURCE_ORACLE_PORT: ${SOURCE_ORACLE_PORT:-1521}
+      SOURCE_MSSQL_HOST: ${SOURCE_MSSQL_HOST:-}
+      SOURCE_MSSQL_PORT: ${SOURCE_MSSQL_PORT:-1433}
+      TARGET_SNOWFLAKE_ACCOUNT: ${TARGET_SNOWFLAKE_ACCOUNT:-}
+      TARGET_SNOWFLAKE_USER: ${TARGET_SNOWFLAKE_USER:-}
+      TARGET_SNOWFLAKE_PASSWORD: ${TARGET_SNOWFLAKE_PASSWORD:-}
+      TARGET_SNOWFLAKE_WAREHOUSE: ${TARGET_SNOWFLAKE_WAREHOUSE:-}
+      TARGET_SNOWFLAKE_DATABASE: ${TARGET_SNOWFLAKE_DATABASE:-}
+    volumes:
+      # Configuration is mounted read-only
+      - ./config:/app/config:ro
+      # Outputs and reports are persisted to the host for inspection
+      - ./output:/app/output
+      - integration-reports:/app/reports
+    networks:
+      - integration-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import src.main"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    # Resource limits (uncomment to enforce; requires Compose deploy support)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2.0"
+    #       memory: 1G
+    #     reservations:
+    #       cpus: "0.5"
+    #       memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # Optional Oracle source (template) - uncomment for full-stack integration
+  # ---------------------------------------------------------------------------
+  # oracle:
+  #   image: gvenzl/oracle-xe:21-slim
+  #   container_name: integration-oracle
+  #   restart: unless-stopped
+  #   ports:
+  #     - "1521:1521"
+  #   environment:
+  #     ORACLE_PASSWORD: ${ORACLE_PASSWORD:-oracle}
+  #     APP_USER: ${ORACLE_APP_USER:-app_user}
+  #     APP_USER_PASSWORD: ${ORACLE_APP_USER_PASSWORD:-app_user}
+  #   volumes:
+  #     - oracle-data:/opt/oracle/oradata
+  #   networks:
+  #     - integration-net
+  #   healthcheck:
+  #     test: ["CMD", "healthcheck.sh"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 60s
+  #   # deploy:
+  #   #   resources:
+  #   #     limits:
+  #   #       cpus: "2.0"
+  #   #       memory: 2G
+
+  # ---------------------------------------------------------------------------
+  # Optional MSSQL source (template) - uncomment for full-stack integration
+  # ---------------------------------------------------------------------------
+  # mssql:
+  #   image: mcr.microsoft.com/mssql/server:2022-latest
+  #   container_name: integration-mssql
+  #   restart: unless-stopped
+  #   ports:
+  #     - "1433:1433"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Str0ng!Passw0rd}
+  #     MSSQL_PID: Developer
+  #   volumes:
+  #     - mssql-data:/var/opt/mssql
+  #   networks:
+  #     - integration-net
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 30s
+  #   # deploy:
+  #   #   resources:
+  #   #     limits:
+  #   #       cpus: "2.0"
+  #   #       memory: 2G
+
+networks:
+  integration-net:
+    driver: bridge
+
+volumes:
+  integration-reports:
+    driver: local
+  # Uncomment alongside the optional database services above
+  # oracle-data:
+  #   driver: local
+  # mssql-data:
+  #   driver: local

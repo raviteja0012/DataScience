@@ -1,0 +1,66 @@
+# =============================================================================
+# Docker build context exclusions - payment-intelligence-agent
+# =============================================================================
+
+# Python bytecode and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Test artifacts
+tests/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Build / packaging artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Streamlit - never bake secrets into an image
+.streamlit/secrets.toml
+
+# Project-specific generated artifacts
+*.faiss
+embeddings_cache/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Type checking caches
+.mypy_cache/
+.ruff_cache/
+
+# Docker / CI metadata
+Dockerfile
+.dockerignore
+docker-compose.yml
+.env
+.env.*
+!.env.example
+
+# Documentation
+docs/
+*.md

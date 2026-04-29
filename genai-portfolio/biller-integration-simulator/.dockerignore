@@ -1,0 +1,62 @@
+# =============================================================================
+# Docker build context exclusions - biller-integration-simulator
+# =============================================================================
+
+# Python bytecode and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Test artifacts
+tests/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Build / packaging artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Generated runtime output
+output/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Type checking caches
+.mypy_cache/
+.ruff_cache/
+
+# Docker / CI metadata (avoid recursive context inclusion)
+Dockerfile
+.dockerignore
+docker-compose.yml
+.env
+.env.*
+!.env.example
+
+# Documentation that the runtime image does not need
+docs/
+*.md

@@ -1,0 +1,46 @@
+# =============================================================================
+# Biller Integration Simulator - docker-compose
+# =============================================================================
+# Run:   docker compose up --build
+# Logs:  docker compose logs -f biller-sim
+# =============================================================================
+version: "3.8"
+
+services:
+  biller-sim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: biller-integration-simulator:latest
+    container_name: biller-sim
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DEMO_MODE: ${DEMO_MODE:-true}
+      OUTPUT_DIR: /app/output
+    volumes:
+      # Configuration is mounted read-only so containers cannot mutate it
+      - ./config:/app/config:ro
+      # Generated artifacts persist on a named volume
+      - biller-output:/app/output
+    healthcheck:
+      test: ["CMD", "python", "-c", "import src.main"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    # Resource limits (uncomment to enforce; requires Compose deploy support)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "1.0"
+    #       memory: 512M
+    #     reservations:
+    #       cpus: "0.25"
+    #       memory: 128M
+
+volumes:
+  biller-output:
+    driver: local

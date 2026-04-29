@@ -1,0 +1,73 @@
+======================================================================
+  Biller Onboarding Example
+======================================================================
+
+  [1] Loading biller configurations...
+
+  Loaded biller configuration from: config/biller_config.yaml
+  Starting onboarding for biller UTIL-GA-POWER-001
+  Onboarding validation passed for UTIL-GA-POWER-001 (10/10 checks)
+  Starting onboarding for biller UTIL-TX-WATER-002
+  Onboarding validation passed for UTIL-TX-WATER-002 (10/10 checks)
+  Starting onboarding for biller UTIL-CA-GAS-003
+  Onboarding validation passed for UTIL-CA-GAS-003 (10/10 checks)
+
+  [PASS] UTIL-GA-POWER-001
+       Name:        Georgia Power & Light
+       CIS:         oracle_ccb v2.9.0.1
+       Division:    GP01
+       Status:      active
+       Checks:      10/10 passed
+       Pay Types:   one_time, autopay, budget_billing
+       CC Fee:      $2.65
+       Settlement:  ach_batch / next_business_day
+
+  [PASS] UTIL-TX-WATER-002
+       Name:        North Texas Municipal Water District
+       CIS:         oracle_ccb v2.8.0.3
+       Division:    NTW1
+       Status:      active
+       Checks:      10/10 passed
+       Pay Types:   one_time, autopay
+       CC Fee:      $2.95
+       Settlement:  ach_batch / t_plus_2
+
+  [PASS] UTIL-CA-GAS-003
+       Name:        Pacific Coast Gas & Electric
+       CIS:         oracle_ccb v2.9.0.2
+       Division:    PCG1
+       Status:      pending
+       Checks:      10/10 passed
+       Pay Types:   one_time, autopay, budget_billing, prepay
+       CC Fee:      $1.99
+       Settlement:  wire / daily
+
+  [2] Activating billers that passed validation...
+
+  Biller UTIL-CA-GAS-003 activated  (state: pending -> active)
+       Activated: UTIL-CA-GAS-003
+
+  [3] Verifying CC&B schema mappings...
+
+  Loaded schema mapping configuration from: config/schema_mapping.yaml
+       CI_ACCT         -> 7 fields mapped (4 required)
+       CI_PER          -> 5 fields mapped (2 required)
+       CI_BILL         -> 9 fields mapped (8 required)
+       CI_BILL_SEG     -> 7 fields mapped (6 required)
+       CI_SA           -> 7 fields mapped (5 required)
+
+  [4] Sample field mapping (CI_ACCT -> canonical)...
+
+       Source (CC&B)             -> Target (Platform)
+       --------------------------------------------------
+       customer_account_id          = 7654321
+       biller_division_code         = GP01
+       account_created_date         = 2023-08-10
+       account_status               = active
+       currency_code                = USD
+       collection_class             = NORM
+
+======================================================================
+  Onboarding example complete.
+  Summary: 3 billers validated, 3 activated, 35 schema fields mapped.
+======================================================================

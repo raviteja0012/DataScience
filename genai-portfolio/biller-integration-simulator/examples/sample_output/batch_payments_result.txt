@@ -1,0 +1,79 @@
+======================================================================
+  Batch Payment Processing Example
+======================================================================
+
+  [1] Onboarding biller...
+       Biller:  UTIL-GA-POWER-001 (Georgia Power & Light)
+       Status:  active
+
+  [2] Setting up CIS adapter with synthetic accounts...
+       Active accounts: 25 of 30 seeded
+
+  [3] Generating 40 payment transactions...
+
+       Sample payment:
+         Transaction: 9494c61c-7b6b-4644-a9a0-3fbfabfdd322
+         Account:     8510029298
+         Amount:      $194.470
+         Method:      debit_card
+         Channel:     ivr
+
+  [4] Processing 40 payments...
+
+       Processed 9494c61c-7b6b... -> settled (debit_card, $194.47, 0.12 ms)
+       Processed b0a3eba9-d8c5... -> settled (check, $213.75, 0.06 ms)
+       Processed 306c6aa7-dce9... -> settled (debit_card, $170.19, 0.05 ms)
+       Processed 5cdb4f63-37c3... -> FAILED (DUPLICATE_PAYMENT)
+                Idempotency:  UTIL-GA-POWER-001:2729208732:160.930:20260428
+                Case opened:  EXC-EB8501BF32 (duplicate_payment, medium)
+       Processed 830d9c68-8a5f... -> FAILED (INSUFFICIENT_FUNDS)
+                Case opened:  EXC-2EFE172DFB (authorization_failure, medium)
+       Processed 676a1583-36f3... -> FAILED (TIMEOUT)
+                Case opened:  EXC-351F825918 (timeout, medium)
+       ... (additional 34 transactions processed)
+
+  ============================================================
+  PROCESSING RESULTS
+  ============================================================
+
+    Total Processed:  40
+    Successful:       27
+    Failed:           13
+    Success Rate:     67.5%
+    Total Amount:     $5,392.69
+
+    Failed Payments (first 5):
+      5cdb4f63-37c... $160.93 - DUPLICATE_PAYMENT
+      abd1951f-6a0... $194.47 - DUPLICATE_PAYMENT
+      811840a0-7c5... $187.07 - DUPLICATE_PAYMENT
+      83b27bf8-b61... $229.27 - DUPLICATE_PAYMENT
+      830d9c68-8a5... $253.33 - INSUFFICIENT_FUNDS
+      ... and 8 more
+
+    Exception Cases:
+      Open:     13
+      Resolved: 0
+        duplicate_payment:     11
+        authorization_failure:  1
+        timeout:                1
+
+    Notifications Sent: 80
+      payment_confirmation: 54
+      payment_failure:      26
+
+  [5] Sending notifications...
+       Dispatched 80 notifications across email and SMS channels.
+
+  [6] Posting successful payments to CIS...
+       Posted 27 payments to CIS (oracle_ccb adapter)
+
+======================================================================
+  Batch processing example complete.
+
+  KEY DEMONSTRATED CAPABILITIES:
+  - Idempotency-key based duplicate detection
+  - Multi-channel notification dispatch (email + SMS)
+  - Exception classification with severity routing
+  - CIS posting via Oracle CC&B adapter
+  - Per-transaction correlation IDs for traceability
+======================================================================
