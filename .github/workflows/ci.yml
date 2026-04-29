@@ -47,10 +47,24 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
-      - name: Run pytest
+      - name: Run pytest with coverage
         working-directory: ${{ matrix.project.path }}
         run: |
-          python -m pytest tests/ -v --tb=short
+          pip install pytest-cov
+          python -m pytest tests/ -v --tb=short \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          file: ${{ matrix.project.path }}/coverage.xml
+          flags: ${{ matrix.project.name }}
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
     name: "Lint: GenAI Portfolio"

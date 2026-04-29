@@ -54,3 +54,18 @@
 - pip install order matters: numpy/pandas first, then structlog, then sentence-transformers (which has heavy transitive deps)
 - `faiss-cpu` is required for the RAG pipeline tests; without it the vector store falls back to numpy brute-force which is fine but slower
 - All 240 tests run in under 10 seconds total when deps are installed
+
+## 2026-04-29 — CI Coverage, Pre-Commit Hooks, Deployment Guide
+
+### Decisions
+- Added pytest-cov + Codecov upload to CI workflow with per-project coverage flags
+- Used Codecov v4 action with `fail_ci_if_error: false` to avoid blocking CI if Codecov is unreachable
+- Pre-commit config uses black, isort, ruff, and mypy — ruff replaces flake8 for pre-commit (flake8 stays in CI for backwards compatibility)
+- Added pytest-cov and structlog to biller and multi-source requirements.txt (payment-agent already had them)
+- Deployment guide covers local dev, Docker, Kubernetes, Snowflake warehouse/schema/role setup, secrets management, and monitoring
+
+### Lessons
+- Keep CI coverage upload as non-blocking (`fail_ci_if_error: false`) — Codecov outages should not break builds
+- Pre-commit hooks should match CI config but can be stricter (ruff catches more than flake8)
+- Deployment docs with concrete SQL and K8s YAML are more useful than abstract guidance
+- Badge URLs should point to the actual GitHub user/repo for them to render correctly

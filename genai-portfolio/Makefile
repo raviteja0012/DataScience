@@ -28,7 +28,8 @@ RESET  := \033[0m
 # ---- Phony targets -----------------------------------------------------------
 
 .PHONY: help install test test-biller test-payment test-integration \
-        lint format clean \
+        coverage coverage-biller coverage-payment coverage-integration \
+        lint format clean pre-commit-install pre-commit-run \
         demo-biller demo-payment demo-integration demo-all streamlit \
         docker-build-all docker-up docker-down
 
@@ -52,10 +53,13 @@ help:
 	@printf "  $(GREEN)make test-biller$(RESET)        Run biller-integration-simulator tests (53)\n"
 	@printf "  $(GREEN)make test-payment$(RESET)       Run payment-intelligence-agent tests (101)\n"
 	@printf "  $(GREEN)make test-integration$(RESET)   Run multi-source-data-integration tests (86)\n"
+	@printf "  $(GREEN)make coverage$(RESET)            Run all tests with coverage report\n"
 	@printf "\n"
 	@printf "$(YELLOW)Code Quality$(RESET)\n"
 	@printf "  $(GREEN)make lint$(RESET)               Run flake8 across all genai-portfolio code\n"
 	@printf "  $(GREEN)make format$(RESET)             Run black + isort (if installed)\n"
+	@printf "  $(GREEN)make pre-commit-install$(RESET) Install pre-commit hooks\n"
+	@printf "  $(GREEN)make pre-commit-run$(RESET)     Run pre-commit on all files\n"
 	@printf "  $(GREEN)make clean$(RESET)              Remove __pycache__, .pytest_cache, *.pyc, output/\n"
 	@printf "\n"
 	@printf "$(YELLOW)Demos$(RESET)\n"
@@ -127,6 +131,37 @@ test-integration:
 	@cd $(INTEGRATION_DIR) && $(PYTHON) -m pytest tests/ -v --tb=short
 
 # ==============================================================================
+# Coverage
+# ==============================================================================
+
+coverage:
+	@printf "$(BLUE)============================================================$(RESET)\n"
+	@printf "$(BLUE)  Running all tests with coverage$(RESET)\n"
+	@printf "$(BLUE)============================================================$(RESET)\n"
+	@for proj in $(PROJECTS); do \
+		printf "\n$(YELLOW)>> Coverage for $$proj...$(RESET)\n"; \
+		(cd $$proj && $(PYTHON) -m pytest tests/ --tb=short -q \
+			--cov=src --cov-report=term-missing --cov-report=xml:coverage.xml) \
+		|| printf "$(RED)   [FAIL] $$proj$(RESET)\n"; \
+	done
+	@printf "\n$(GREEN)>> Coverage reports generated.$(RESET)\n"
+
+coverage-biller:
+	@printf "$(BLUE)>> Coverage for biller-integration-simulator...$(RESET)\n"
+	@cd $(BILLER_DIR) && $(PYTHON) -m pytest tests/ -v --tb=short \
+		--cov=src --cov-report=term-missing --cov-report=html:htmlcov
+
+coverage-payment:
+	@printf "$(BLUE)>> Coverage for payment-intelligence-agent...$(RESET)\n"
+	@cd $(PAYMENT_DIR) && $(PYTHON) -m pytest tests/ -v --tb=short \
+		--cov=src --cov-report=term-missing --cov-report=html:htmlcov
+
+coverage-integration:
+	@printf "$(BLUE)>> Coverage for multi-source-data-integration...$(RESET)\n"
+	@cd $(INTEGRATION_DIR) && $(PYTHON) -m pytest tests/ -v --tb=short \
+		--cov=src --cov-report=term-missing --cov-report=html:htmlcov
+
+# ==============================================================================
 # Code quality
 # ==============================================================================
 
@@ -174,6 +209,20 @@ clean:
 		fi; \
 	done
 	@printf "$(GREEN)>> Clean complete.$(RESET)\n"
+
+pre-commit-install:
+	@printf "$(BLUE)>> Installing pre-commit hooks...$(RESET)\n"
+	@if ! command -v pre-commit >/dev/null 2>&1; then \
+		printf "$(YELLOW)-- Installing pre-commit...$(RESET)\n"; \
+		$(PYTHON) -m pip install pre-commit; \
+	fi
+	@pre-commit install
+	@printf "$(GREEN)>> Pre-commit hooks installed.$(RESET)\n"
+
+pre-commit-run:
+	@printf "$(BLUE)>> Running pre-commit on all files...$(RESET)\n"
+	@pre-commit run --all-files || true
+	@printf "$(GREEN)>> Pre-commit run complete.$(RESET)\n"
 
 # ==============================================================================
 # Demos

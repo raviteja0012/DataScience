@@ -1,5 +1,11 @@
 # GenAI Portfolio
 
+[![CI](https://github.com/raviteja0012/DataScience/actions/workflows/ci.yml/badge.svg)](https://github.com/raviteja0012/DataScience/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/raviteja0012/DataScience/branch/main/graph/badge.svg)](https://codecov.io/gh/raviteja0012/DataScience)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
 A collection of three production-oriented GenAI and data engineering projects demonstrating end-to-end system design across utility billing integration, conversational AI analytics, and large-scale data migration. Each project emphasizes testability, clean architecture, and real-world domain complexity -- from Oracle CC&B schema modeling and PCI-DSS compliance to M&A identity resolution and checkpoint/restart pipelines.
 
 ---
@@ -99,11 +105,20 @@ cd payment-intelligence-agent && python -m pytest tests/ -v && cd ..
 cd multi-source-data-integration && python -m pytest tests/ -v && cd ..
 ```
 
-Or run them all in one pass with a shell loop:
+Or use the Makefile for convenience:
 
 ```bash
-for project in biller-integration-simulator payment-intelligence-agent multi-source-data-integration; do
-    echo "=== Running tests for $project ==="
-    (cd "$project" && python -m pytest tests/ -v)
-done
+make test              # Run all 240 tests
+make coverage          # Run all tests with coverage report
+make coverage-biller   # Coverage for a single project (with HTML report)
+```
+
+### Coverage
+
+Each project targets **80%+ line coverage**. Coverage is reported in CI via [Codecov](https://codecov.io/gh/raviteja0012/DataScience) and can be generated locally:
+
+```bash
+cd biller-integration-simulator
+python -m pytest tests/ --cov=src --cov-report=term-missing --cov-report=html:htmlcov
+open htmlcov/index.html
 ```

@@ -19,7 +19,11 @@
 - [x] Add portfolio-level Makefile, ARCHITECTURE.md, CONTRIBUTING.md, pytest.ini, .flake8
 - [x] Re-verify all 240 tests pass after additions
 
+- [x] Add coverage reporting to CI pipeline (pytest-cov + codecov badge)
+- [x] Set up pre-commit hooks (black, ruff, mypy)
+- [x] Add deployment guide showing how all 3 projects integrate in production
+
 ## Backlog
-- [ ] Add coverage reporting to CI pipeline (pytest-cov + codecov badge)
-- [ ] Set up pre-commit hooks (black, ruff, mypy)
-- [ ] Add a top-level deployment guide showing how all 3 projects integrate in production
+- [ ] Add integration tests between projects (MSI → BIS → PIA data flow)
+- [ ] Set up GitHub branch protection rules on main
+- [ ] Add Dependabot configuration for automated dependency updates

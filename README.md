@@ -1,6 +1,11 @@
 Data Science Portfolio
 =====================
 
+[![CI](https://github.com/raviteja0012/DataScience/actions/workflows/ci.yml/badge.svg)](https://github.com/raviteja0012/DataScience/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/raviteja0012/DataScience/branch/main/graph/badge.svg)](https://codecov.io/gh/raviteja0012/DataScience)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A comprehensive collection of **36 production-ready data science projects** organized into 7 categories, covering machine learning, deep learning, data analysis, NLP, data engineering, MLOps, and GenAI/enterprise data systems. Each project is self-contained with synthetic data generation, making them immediately runnable.
 
 Inspired by [50+ Data Project Ideas That Actually Get You Hired](https://penelopefitdatascientist.substack.com/p/50-data-project-ideas-that-actually) and reference implementations from the open-source data science community.
