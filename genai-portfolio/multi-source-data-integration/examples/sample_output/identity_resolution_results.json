@@ -1,0 +1,151 @@
+{
+  "report_id": "identity-resolution-customer-2026-04-29",
+  "entity_type": "customer",
+  "generated_at": "2026-04-29T20:15:42.014228+00:00",
+  "input": {
+    "total_records": 1000,
+    "by_source": {
+      "legacy_oracle":    500,
+      "legacy_sqlserver": 500
+    }
+  },
+  "output": {
+    "resolved_entities":   930,
+    "duplicates_found":     70,
+    "cross_source_matches": 70,
+    "within_source_matches": 0,
+    "comparisons_performed": 5719,
+    "blocking_strategy": "soundex_lastname_state",
+    "blocking_efficiency_pct": 98.86
+  },
+  "matching_config": {
+    "strategies": [
+      {"name": "exact",       "weight": 1.00, "fields": ["tax_id", "phone"]},
+      {"name": "jaro_winkler","weight": 0.85, "fields": ["customer_name"], "threshold": 0.92},
+      {"name": "levenshtein", "weight": 0.70, "fields": ["address"],       "threshold": 0.80},
+      {"name": "metaphone",   "weight": 0.60, "fields": ["customer_name"], "threshold": 1.00}
+    ],
+    "match_threshold":   0.85,
+    "review_threshold":  0.70,
+    "auto_merge_above":  0.95
+  },
+  "survivorship_config": {
+    "default_rule": "most_complete",
+    "field_overrides": {
+      "email":  "newest",
+      "phone":  "newest",
+      "tax_id": "source_priority"
+    },
+    "source_priority": ["legacy_oracle", "legacy_sqlserver"]
+  },
+  "sample_resolved_entities": [
+    {
+      "business_key": "BK-ce8d7ad96037",
+      "confidence": 1.0000,
+      "merged_from": ["legacy_oracle:CUST-1041", "legacy_sqlserver:CustomerID-742"],
+      "match_signals": [
+        {"field": "customer_name", "method": "exact",     "score": 1.00},
+        {"field": "tax_id",        "method": "exact",     "score": 1.00},
+        {"field": "phone",         "method": "exact",     "score": 1.00}
+      ],
+      "fields": {
+        "customer_name": {"value": "andrew walker",        "winner_source": "legacy_oracle",    "rule": "most_complete"},
+        "email":         {"value": "andrewwalker@company.com", "winner_source": "legacy_oracle", "rule": "newest"},
+        "phone":         {"value": "2138864541",            "winner_source": "legacy_oracle",    "rule": "newest"},
+        "city":          {"value": "denver",                "winner_source": "legacy_oracle",    "rule": "most_complete"},
+        "state":         {"value": "co",                    "winner_source": "legacy_oracle",    "rule": "most_complete"},
+        "tax_id":        {"value": "84-5512094",            "winner_source": "legacy_oracle",    "rule": "source_priority"}
+      }
+    },
+    {
+      "business_key": "BK-17efa015aeba",
+      "confidence": 1.0000,
+      "merged_from": ["legacy_oracle:CUST-2207", "legacy_sqlserver:CustomerID-1133"],
+      "match_signals": [
+        {"field": "customer_name", "method": "exact",        "score": 1.00},
+        {"field": "phone",         "method": "exact",        "score": 1.00},
+        {"field": "tax_id",        "method": "exact",        "score": 1.00}
+      ],
+      "fields": {
+        "customer_name": {"value": "patricia flores",         "winner_source": "legacy_oracle",    "rule": "most_complete"},
+        "email":         {"value": "patriciaflores@acme.org", "winner_source": "legacy_sqlserver", "rule": "newest"},
+        "phone":         {"value": "4315531231",              "winner_source": "legacy_sqlserver", "rule": "newest"},
+        "city":          {"value": "indianapolis",            "winner_source": "legacy_oracle",    "rule": "most_complete"},
+        "state":         {"value": "in",                      "winner_source": "legacy_oracle",    "rule": "most_complete"},
+        "tax_id":        {"value": "31-7794118",              "winner_source": "legacy_oracle",    "rule": "source_priority"}
+      }
+    },
+    {
+      "business_key": "BK-46b796bcbd4a",
+      "confidence": 0.9852,
+      "merged_from": ["legacy_oracle:CUST-3304", "legacy_sqlserver:CustomerID-2218"],
+      "match_signals": [
+        {"field": "customer_name", "method": "jaro_winkler", "score": 0.9650, "src_value": "david lee", "tgt_value": "david lei"},
+        {"field": "phone",         "method": "exact",        "score": 1.00},
+        {"field": "address",       "method": "levenshtein",  "score": 0.94}
+      ],
+      "merge_notes": [
+        "Surname spelling variation (lee vs lei) accepted under jaro_winkler >= 0.92"
+      ],
+      "fields": {
+        "customer_name": {"value": "david lei",        "winner_source": "legacy_sqlserver", "rule": "most_complete"},
+        "email":         {"value": "davidlee@corp.net","winner_source": "legacy_sqlserver", "rule": "newest"},
+        "phone":         {"value": "6132691736",       "winner_source": "legacy_sqlserver", "rule": "newest"},
+        "city":          {"value": "portland",         "winner_source": "legacy_sqlserver", "rule": "most_complete"},
+        "state":         {"value": "or",               "winner_source": "legacy_sqlserver", "rule": "most_complete"}
+      }
+    },
+    {
+      "business_key": "BK-cda62f735bdd",
+      "confidence": 1.0000,
+      "merged_from": ["legacy_oracle:CUST-4108", "legacy_sqlserver:CustomerID-3019"],
+      "match_signals": [
+        {"field": "customer_name", "method": "exact", "score": 1.00},
+        {"field": "phone",         "method": "exact", "score": 1.00}
+      ],
+      "fields": {
+        "customer_name": {"value": "ember creative",          "winner_source": "legacy_oracle", "rule": "most_complete"},
+        "email":         {"value": "dorothyflores@gmail.com", "winner_source": "legacy_oracle", "rule": "newest"},
+        "phone":         {"value": "9758792021",              "winner_source": "legacy_oracle", "rule": "newest"},
+        "city":          {"value": "seattle",                 "winner_source": "legacy_oracle", "rule": "most_complete"},
+        "state":         {"value": "wa",                      "winner_source": "legacy_oracle", "rule": "most_complete"}
+      }
+    },
+    {
+      "business_key": "BK-f2da0972c0b6",
+      "confidence": 1.0000,
+      "merged_from": ["legacy_oracle:CUST-5077", "legacy_sqlserver:CustomerID-4811"],
+      "match_signals": [
+        {"field": "customer_name", "method": "exact", "score": 1.00},
+        {"field": "phone",         "method": "exact", "score": 1.00}
+      ],
+      "fields": {
+        "customer_name": {"value": "patricia sanchez", "winner_source": "legacy_sqlserver", "rule": "most_complete"},
+        "email":         {"value": null,               "winner_source": null,               "rule": "no_value_either_source"},
+        "phone":         {"value": "9817308540",       "winner_source": "legacy_sqlserver", "rule": "newest"},
+        "city":          {"value": "phoenix",          "winner_source": "legacy_sqlserver", "rule": "most_complete"},
+        "state":         {"value": "az",               "winner_source": "legacy_sqlserver", "rule": "most_complete"}
+      }
+    }
+  ],
+  "review_queue": [
+    {
+      "candidate_id": "REVIEW-2026-04-29-001",
+      "confidence": 0.78,
+      "reason": "Below auto-merge threshold but above review threshold",
+      "left":  {"source": "legacy_oracle",    "id": "CUST-7212", "name": "robert johnson",    "phone": "5551234567"},
+      "right": {"source": "legacy_sqlserver", "id": "CustomerID-6089", "name": "bob johnson", "phone": "5551234567"},
+      "match_signals": [
+        {"field": "customer_name", "method": "jaro_winkler", "score": 0.84, "note": "common nickname mapping (robert -> bob)"},
+        {"field": "phone",         "method": "exact",        "score": 1.00}
+      ],
+      "suggested_action": "human_review"
+    }
+  ],
+  "metrics": {
+    "total_metrics_recorded": 4,
+    "total_pipeline_duration_s": 0.181,
+    "total_rows_processed": 1000,
+    "total_errors": 0
+  }
+}
