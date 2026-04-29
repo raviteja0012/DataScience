@@ -1,0 +1,160 @@
+======================================================================
+MULTI-SOURCE DATA INTEGRATION - FULL PIPELINE
+Run: acme-corp-acquisition-integration
+======================================================================
+
+  Started:  2026-04-29 20:15:41 UTC
+  Finished: 2026-04-29 20:15:42 UTC
+  Duration: 0.66s
+  Status:   COMPLETED (with reconciliation warnings)
+
+======================================================================
+PHASE 1: SOURCE SYSTEM DISCOVERY                          (0.072s)
+======================================================================
+
+  [legacy_oracle] AcmeCorp Oracle ERP
+    Tables: 4
+    Total rows: 2,608
+      CUST_MASTER:      500 rows, 16 cols
+      PRODUCT_CATALOG:   71 rows, 10 cols
+      ORDER_HEADER:     500 rows, 10 cols
+      ORDER_DETAIL:   1,537 rows,  7 cols
+    Quality Score: 0.8717  (PASS)
+
+  [legacy_sqlserver] BetaTech SQL Server CRM
+    Tables: 4
+    Total rows: 2,599
+      Customers:          500 rows, 18 cols
+      Products:            72 rows, 10 cols
+      SalesOrders:        500 rows, 10 cols
+      SalesOrderDetails:1,527 rows,  7 cols
+    Quality Score: 0.8532  (PASS)
+
+  Schema Comparisons (source -> target):
+    ERP_OWNER.CUST_MASTER      -> INTEGRATED.DIM_CUSTOMER       81.2% coverage
+    ERP_OWNER.PRODUCT_CATALOG  -> INTEGRATED.DIM_PRODUCT        90.0% coverage
+    ERP_OWNER.ORDER_HEADER     -> INTEGRATED.FACT_SALES_ORDER  100.0% coverage
+    ERP_OWNER.ORDER_DETAIL     -> INTEGRATED.FACT_SALES_ORDER   71.4% coverage
+
+  Load Waves (parallelizable):
+    [legacy_oracle]
+      Wave 1: ['CUST_MASTER', 'PRODUCT_CATALOG']
+      Wave 2: ['ORDER_HEADER']
+      Wave 3: ['ORDER_DETAIL']
+    [legacy_sqlserver]
+      Wave 1: ['Customers', 'Products']
+      Wave 2: ['SalesOrders']
+      Wave 3: ['SalesOrderDetails']
+
+======================================================================
+PHASE 2: SCHEMA MAPPING                                  (0.036s)
+======================================================================
+
+  Loaded mappings:
+    customer    -> INTEGRATED.DIM_CUSTOMER       (2 sources)
+    product     -> INTEGRATED.DIM_PRODUCT        (2 sources)
+    transaction -> 2 sub-entities (header, line)
+
+  Mapping Results:
+    legacy_oracle/customer    -> 500 records mapped, 0 errors
+    legacy_sqlserver/customer -> 500 records mapped, 0 errors
+
+  Sample target columns produced:
+    SOURCE_ID, CUSTOMER_NAME, FIRST_NAME, LAST_NAME, COMPANY_NAME,
+    FULL_ADDRESS, EMAIL, PHONE, TAX_ID, CUSTOMER_TYPE, ...
+
+======================================================================
+PHASE 3: IDENTITY RESOLUTION                             (0.181s)
+======================================================================
+
+  Total input:        1,000 records (500 + 500)
+  Resolved entities:    930
+  Duplicates found:      70  (all cross-source)
+  Within-source dupes:    0
+  Comparisons:        5,719  (98.86% blocking efficiency)
+
+  Sample cross-source entity:
+    Business key: BK-d3c0b2d42874
+    Confidence:   1.0000
+    Sources:     ['legacy_oracle', 'legacy_sqlserver']
+
+======================================================================
+PHASE 4: CUTOVER EXECUTION                               (0.161s)
+======================================================================
+
+  Strategy: phased
+  Run ID:   0e74e43c
+  Total phases: 3
+  Total rows loaded: 900
+
+    Phase 1: reference_data
+      Tasks: 3 (categories, products, regions)
+      Rows:  300
+      Duration: 0.05s
+      Status: OK
+
+    Phase 2: master_data
+      Tasks: 3 (customers, employees, vendors)
+      Rows:  300
+      Duration: 0.05s
+      Status: OK
+
+    Phase 3: transactional_data
+      Tasks: 3 (orders, order_lines, payments)
+      Rows:  300
+      Duration: 0.05s
+      Status: OK
+
+  Checkpoints created and cleaned. Idempotent retry-safe.
+
+======================================================================
+PHASE 5: RECONCILIATION VALIDATION                       (0.022s)
+======================================================================
+
+  Overall: FAILED  (1 of 16 checks failed across 4 entities)
+
+  [customer]         PASS
+    Count: total_row_count = 1,000 (expected 1,000, delta 0)
+    Count: source_count_legacy_oracle    = 500 (expected 500, delta 0)
+    Count: source_count_legacy_sqlserver = 500 (expected 500, delta 0)
+    Value: customer_type_distribution    PASS
+    Hash:  matching=1, missing=0, mismatches=0
+
+  [product]          FAIL
+    Count: total_row_count = 143 (expected 143, delta 0)
+    Value: total_list_price (sum)        FAIL  - aggregate diverges by $1,204.18
+    Value: price_range (min)             PASS
+    Hash:  matching=1, missing=0, mismatches=0
+
+  [sales_order]      PASS
+    Count, Value, Hash: all green
+
+  [sales_order_line] PASS
+    Count, Value, Hash: all green
+
+  Reports written:
+    output/reports/reconciliation_acme-corp-acquisition-integration.html
+    output/reports/reconciliation_acme-corp-acquisition-integration.json
+
+======================================================================
+PIPELINE COMPLETE
+======================================================================
+
+  Pipeline:                     acme-corp-acquisition-integration
+  Total metrics recorded:       20
+  Total pipeline duration:      0.66s
+  Phases executed:              cutover, discovery, identity_resolution,
+                                mapping, reconciliation
+  Total rows processed:         8,107
+  Metrics exported to:          output/metrics/pipeline_metrics.json
+
+  KEY DEMONSTRATED CAPABILITIES:
+  - Profiling and quality scoring across two heterogeneous source systems
+  - Dependency-aware load wave planning
+  - Multi-source schema mapping with confidence scoring
+  - Probabilistic identity resolution with survivorship rules
+  - Phased cutover with checkpoints and parallel task execution
+  - Multi-dimensional reconciliation (count, value, hash) with HTML+JSON reports
+
+  Next:    inspect output/reports/reconciliation_*.html in a browser, or
+           re-run with --strategy big_bang for an all-at-once cutover plan.
