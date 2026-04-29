@@ -1,0 +1,191 @@
+================================================================================
+  PAYMENT INTELLIGENCE AGENT - Analytics Demo
+  NL-to-SQL Translation Pipeline
+================================================================================
+
+--------------------------------------------------------------------------------
+  Query 1: Show me top 10 merchants by transaction volume last month
+--------------------------------------------------------------------------------
+
+  Template: top_merchants_by_volume
+  Time Range: {'start': '2026-03-29', 'end': '2026-04-29'}
+  Explanation: Top merchants by transaction volume for the last month
+
+  Generated SQL:
+    SELECT m.MERCHANT_NAME, COUNT(*) AS transaction_count,
+           SUM(t.AMOUNT) AS total_volume,
+           AVG(t.AMOUNT) AS avg_transaction
+    FROM TRANSACTIONS t
+    JOIN MERCHANTS m ON t.MERCHANT_ID = m.MERCHANT_ID
+    WHERE t.TRANSACTION_DATE >= '2026-03-29'
+      AND t.TRANSACTION_DATE < '2026-04-29'
+      AND t.STATUS = 'APPROVED'
+    GROUP BY m.MERCHANT_NAME
+    ORDER BY total_volume DESC
+    LIMIT 10
+
+  Validation: PASS
+
+  Results: 10 rows x 4 columns
+  Columns: MERCHANT_NAME, transaction_count, total_volume, avg_transaction
+
+  Sample data:
+                  MERCHANT_NAME  transaction_count  total_volume  avg_transaction
+            Atlas Retail Group               4218     1842305.50           436.77
+       Northwind Marketplace                 3987     1634281.18           409.91
+       Continental Travel Co                 2104     1289445.62           612.85
+              Vertex Software                1342      942711.04           702.46
+        Beacon Restaurant Grp                3215      758402.91           235.91
+              CityFresh Foods                4501      612894.33           136.17
+        Northern Lights Hotel                 894      598221.72           669.15
+              Lumen Wellness                 2078      512804.06           246.78
+            Harbor Auto Parts                1605      478233.81           297.96
+        Crescent Coffee Bars                 5891      461029.44            78.26
+
+  Summary: Atlas Retail Group leads with $1.84M in total volume across 4,218
+  transactions, with an average ticket of $436.77. The top 3 merchants account
+  for 49% of all volume in the period. Continental Travel has the highest
+  average ticket size ($612.85).
+
+--------------------------------------------------------------------------------
+  Query 2: What is the average settlement time by payment method?
+--------------------------------------------------------------------------------
+
+  Template: settlement_time_by_method
+  Time Range: {'start': '2026-04-01', 'end': '2026-04-29'}
+  Explanation: Average settlement time grouped by payment method
+
+  Generated SQL:
+    SELECT s.PAYMENT_METHOD,
+           AVG(s.SETTLEMENT_DAYS) AS avg_settlement_days,
+           MIN(s.SETTLEMENT_DAYS) AS min_settlement_days,
+           MAX(s.SETTLEMENT_DAYS) AS max_settlement_days,
+           COUNT(*) AS settlement_count
+    FROM SETTLEMENTS s
+    WHERE s.SETTLEMENT_DATE >= '2026-04-01'
+      AND s.SETTLEMENT_DATE < '2026-04-29'
+    GROUP BY s.PAYMENT_METHOD
+    ORDER BY avg_settlement_days ASC
+
+  Validation: PASS
+
+  Results: 5 rows x 5 columns
+  Columns: PAYMENT_METHOD, avg_settlement_days, min_settlement_days,
+           max_settlement_days, settlement_count
+
+  Sample data:
+   PAYMENT_METHOD  avg_settlement_days  min  max  settlement_count
+        DEBIT_CARD                 0.91    0    2             18402
+       CREDIT_CARD                 1.84    1    3             24517
+              ACH                  2.05    1    4             11023
+             WIRE                  0.20    0    1               412
+            CHECK                  4.32    2    7              1885
+
+  Summary: Wire transfers settle fastest (0.2 days avg) but represent only
+  0.7% of volume. Credit cards average 1.84 days, in line with V/MC standards.
+  Checks remain the slowest at 4.32 days - candidates for migration to ACH.
+
+--------------------------------------------------------------------------------
+  Query 3: How many chargebacks occurred last month?
+--------------------------------------------------------------------------------
+
+  Template: chargeback_summary
+  Time Range: {'start': '2026-03-29', 'end': '2026-04-29'}
+
+  Generated SQL:
+    SELECT cb.REASON_CODE, cb.REASON_DESCRIPTION,
+           COUNT(*) AS chargeback_count,
+           SUM(cb.AMOUNT) AS total_amount,
+           AVG(cb.RESOLUTION_DAYS) AS avg_resolution_days,
+           SUM(CASE WHEN cb.STATUS = 'WON' THEN 1 ELSE 0 END) AS won_count,
+           ROUND(SUM(CASE WHEN cb.STATUS = 'WON' THEN 1 ELSE 0 END) * 100.0
+                 / COUNT(*), 2) AS win_rate_pct
+    FROM CHARGEBACKS cb
+    WHERE cb.CHARGEBACK_DATE >= '2026-03-29'
+      AND cb.CHARGEBACK_DATE < '2026-04-29'
+    GROUP BY cb.REASON_CODE, cb.REASON_DESCRIPTION
+    ORDER BY chargeback_count DESC
+
+  Validation: PASS
+
+  Results: 7 rows x 7 columns
+
+  Sample data:
+   REASON_CODE  REASON_DESCRIPTION         count  total_amt   avg_resolution  win_rate_pct
+          4855  Goods/Services Not Rcvd     384   $48,221.18         12.4         42.18
+          4837  Fraud - No Authorization    211   $76,442.20         18.7         28.91
+          4853  Cardholder Dispute          198   $22,805.71         11.2         51.01
+          4863  Cardholder ID Theft         145   $39,711.08         21.3         33.10
+          4540  Refund Not Processed         87    $9,205.42          7.8         68.96
+          4870  Counterfeit Transaction      54   $19,330.91         24.5         18.51
+          4530  Not as Described             32    $4,128.50         15.6         59.37
+
+  Summary: 1,111 chargebacks totaling $219K. Fraud-related codes (4837, 4863,
+  4870) drive 36% of count but 62% of dollar exposure. Win rate is lowest on
+  counterfeit (18.5%) - consider strengthening 3DS coverage on those flows.
+
+--------------------------------------------------------------------------------
+  Query 4: Compare revenue across regions
+--------------------------------------------------------------------------------
+
+  Template: revenue_by_region
+  Validation: PASS
+  Results: 6 rows x 5 columns
+
+  Sample data:
+        REGION  transaction_count  total_revenue  avg_transaction  total_fees
+     NORTHEAST              74221     8,422,118.40       113.47       194,288
+       MIDWEST              52188     5,201,778.20        99.67       119,442
+         SOUTH              68913     6,889,440.51        99.97       158,471
+          WEST              81004     9,778,091.27       120.71       224,706
+        CANADA              22411     2,401,228.04       107.14        55,228
+            EU              18772     2,108,994.12       112.36        48,506
+
+  Summary: WEST region leads at $9.78M (28% of total). EU and Canada are
+  smaller but show higher avg ticket sizes than US Midwest. Total fees of
+  $800K represent a 2.4% effective rate.
+
+--------------------------------------------------------------------------------
+  Query 5: What is the decline rate by payment method?
+--------------------------------------------------------------------------------
+
+  Template: decline_rate_by_method
+  Validation: PASS
+  Results: 5 rows x 5 columns
+
+  Sample data:
+    PAYMENT_METHOD  total_transactions  declined_count  decline_rate_pct  approved
+       CREDIT_CARD              191222           14377             7.52     176845
+        DEBIT_CARD              182411            6995             3.83     175416
+               ACH               44771            1018             2.27      43753
+              WIRE                3122              48             1.54       3074
+             CHECK               12044             211             1.75      11833
+
+  Summary: Credit cards see the highest decline rate (7.52%), driven by
+  insufficient funds and CVV mismatches. ACH and WIRE both run under 2.5% -
+  consistent with low-fraud, low-friction rails.
+
+--------------------------------------------------------------------------------
+  Query 6: Show me the daily transaction volume trend
+--------------------------------------------------------------------------------
+
+  Template: daily_volume_trend
+  Validation: PASS
+  Results: 30 rows x 3 columns
+
+  Trend (last 7 days shown):
+   transaction_day  transaction_count  total_volume
+      2026-04-22             14211      1,492,331.04
+      2026-04-23             14988      1,571,809.33
+      2026-04-24             16205      1,694,887.51
+      2026-04-25             11077        921,400.70   <-- Saturday dip
+      2026-04-26              9844        787,227.90   <-- Sunday dip
+      2026-04-27             15721      1,640,005.42
+      2026-04-28             16802      1,769,501.81
+
+  Summary: Stable weekday baseline ~15K txns/day. Weekend volume drops 35%
+  consistent with B2B-skewed mix. No anomalous spikes detected in the window.
+
+================================================================================
+  Demo complete. All queries translated, validated, and executed.
+================================================================================

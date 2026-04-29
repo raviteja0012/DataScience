@@ -1,0 +1,105 @@
+{
+  "session_id": "analytics-demo-2026-04-29",
+  "generated_at": "2026-04-29T20:15:42.123456+00:00",
+  "queries": [
+    {
+      "query_index": 1,
+      "natural_language": "Show me top 10 merchants by transaction volume last month",
+      "template": "top_merchants_by_volume",
+      "time_range": {
+        "start": "2026-03-29",
+        "end": "2026-04-29",
+        "label": "last month"
+      },
+      "explanation": "Top merchants by transaction volume for the last month",
+      "sql": "SELECT m.MERCHANT_NAME, COUNT(*) AS transaction_count, SUM(t.AMOUNT) AS total_volume, AVG(t.AMOUNT) AS avg_transaction FROM TRANSACTIONS t JOIN MERCHANTS m ON t.MERCHANT_ID = m.MERCHANT_ID WHERE t.TRANSACTION_DATE >= '2026-03-29' AND t.TRANSACTION_DATE < '2026-04-29' AND t.STATUS = 'APPROVED' GROUP BY m.MERCHANT_NAME ORDER BY total_volume DESC LIMIT 10",
+      "validation": {
+        "is_safe": true,
+        "warnings": [],
+        "blocked_keywords": [],
+        "row_limit_enforced": true
+      },
+      "results": {
+        "row_count": 10,
+        "column_count": 4,
+        "columns": ["MERCHANT_NAME", "transaction_count", "total_volume", "avg_transaction"],
+        "rows": [
+          {"MERCHANT_NAME": "Atlas Retail Group",       "transaction_count": 4218, "total_volume": 1842305.50, "avg_transaction": 436.77},
+          {"MERCHANT_NAME": "Northwind Marketplace",    "transaction_count": 3987, "total_volume": 1634281.18, "avg_transaction": 409.91},
+          {"MERCHANT_NAME": "Continental Travel Co",    "transaction_count": 2104, "total_volume": 1289445.62, "avg_transaction": 612.85},
+          {"MERCHANT_NAME": "Vertex Software",          "transaction_count": 1342, "total_volume":  942711.04, "avg_transaction": 702.46},
+          {"MERCHANT_NAME": "Beacon Restaurant Grp",    "transaction_count": 3215, "total_volume":  758402.91, "avg_transaction": 235.91},
+          {"MERCHANT_NAME": "CityFresh Foods",          "transaction_count": 4501, "total_volume":  612894.33, "avg_transaction": 136.17},
+          {"MERCHANT_NAME": "Northern Lights Hotel",    "transaction_count":  894, "total_volume":  598221.72, "avg_transaction": 669.15},
+          {"MERCHANT_NAME": "Lumen Wellness",           "transaction_count": 2078, "total_volume":  512804.06, "avg_transaction": 246.78},
+          {"MERCHANT_NAME": "Harbor Auto Parts",        "transaction_count": 1605, "total_volume":  478233.81, "avg_transaction": 297.96},
+          {"MERCHANT_NAME": "Crescent Coffee Bars",     "transaction_count": 5891, "total_volume":  461029.44, "avg_transaction":  78.26}
+        ]
+      },
+      "summary": "Atlas Retail Group leads with $1.84M in total volume across 4,218 transactions, with an average ticket of $436.77. The top 3 merchants account for 49% of all volume in the period. Continental Travel has the highest average ticket size ($612.85).",
+      "metadata": {
+        "execution_ms": 247,
+        "warehouse": "ANALYTICS_WH",
+        "rows_scanned": 132811,
+        "bytes_scanned": 18244302,
+        "cache_hit": false
+      }
+    },
+    {
+      "query_index": 2,
+      "natural_language": "What is the average settlement time by payment method?",
+      "template": "settlement_time_by_method",
+      "time_range": {"start": "2026-04-01", "end": "2026-04-29", "label": "this month"},
+      "explanation": "Average settlement time grouped by payment method",
+      "sql": "SELECT s.PAYMENT_METHOD, AVG(s.SETTLEMENT_DAYS) AS avg_settlement_days, MIN(s.SETTLEMENT_DAYS) AS min_settlement_days, MAX(s.SETTLEMENT_DAYS) AS max_settlement_days, COUNT(*) AS settlement_count FROM SETTLEMENTS s WHERE s.SETTLEMENT_DATE >= '2026-04-01' AND s.SETTLEMENT_DATE < '2026-04-29' GROUP BY s.PAYMENT_METHOD ORDER BY avg_settlement_days ASC",
+      "validation": {"is_safe": true, "warnings": []},
+      "results": {
+        "row_count": 5,
+        "column_count": 5,
+        "columns": ["PAYMENT_METHOD", "avg_settlement_days", "min_settlement_days", "max_settlement_days", "settlement_count"],
+        "rows": [
+          {"PAYMENT_METHOD": "WIRE",        "avg_settlement_days": 0.20, "min_settlement_days": 0, "max_settlement_days": 1, "settlement_count":   412},
+          {"PAYMENT_METHOD": "DEBIT_CARD",  "avg_settlement_days": 0.91, "min_settlement_days": 0, "max_settlement_days": 2, "settlement_count": 18402},
+          {"PAYMENT_METHOD": "CREDIT_CARD", "avg_settlement_days": 1.84, "min_settlement_days": 1, "max_settlement_days": 3, "settlement_count": 24517},
+          {"PAYMENT_METHOD": "ACH",         "avg_settlement_days": 2.05, "min_settlement_days": 1, "max_settlement_days": 4, "settlement_count": 11023},
+          {"PAYMENT_METHOD": "CHECK",       "avg_settlement_days": 4.32, "min_settlement_days": 2, "max_settlement_days": 7, "settlement_count":  1885}
+        ]
+      },
+      "summary": "Wire transfers settle fastest (0.2 days avg) but represent only 0.7% of volume. Credit cards average 1.84 days, in line with V/MC standards. Checks remain the slowest at 4.32 days - candidates for migration to ACH."
+    },
+    {
+      "query_index": 3,
+      "natural_language": "How many chargebacks occurred last month?",
+      "template": "chargeback_summary",
+      "time_range": {"start": "2026-03-29", "end": "2026-04-29", "label": "last month"},
+      "validation": {"is_safe": true, "warnings": []},
+      "results": {
+        "row_count": 7,
+        "totals": {
+          "total_chargebacks": 1111,
+          "total_amount_usd": 219844.99,
+          "avg_resolution_days": 15.93,
+          "weighted_win_rate_pct": 38.7
+        },
+        "rows": [
+          {"REASON_CODE": "4855", "REASON_DESCRIPTION": "Goods/Services Not Received", "chargeback_count": 384, "total_amount": 48221.18, "avg_resolution_days": 12.4, "won_count": 162, "win_rate_pct": 42.18},
+          {"REASON_CODE": "4837", "REASON_DESCRIPTION": "Fraud - No Authorization",    "chargeback_count": 211, "total_amount": 76442.20, "avg_resolution_days": 18.7, "won_count":  61, "win_rate_pct": 28.91},
+          {"REASON_CODE": "4853", "REASON_DESCRIPTION": "Cardholder Dispute",          "chargeback_count": 198, "total_amount": 22805.71, "avg_resolution_days": 11.2, "won_count": 101, "win_rate_pct": 51.01},
+          {"REASON_CODE": "4863", "REASON_DESCRIPTION": "Cardholder ID Theft",         "chargeback_count": 145, "total_amount": 39711.08, "avg_resolution_days": 21.3, "won_count":  48, "win_rate_pct": 33.10},
+          {"REASON_CODE": "4540", "REASON_DESCRIPTION": "Refund Not Processed",        "chargeback_count":  87, "total_amount":  9205.42, "avg_resolution_days":  7.8, "won_count":  60, "win_rate_pct": 68.96},
+          {"REASON_CODE": "4870", "REASON_DESCRIPTION": "Counterfeit Transaction",     "chargeback_count":  54, "total_amount": 19330.91, "avg_resolution_days": 24.5, "won_count":  10, "win_rate_pct": 18.51},
+          {"REASON_CODE": "4530", "REASON_DESCRIPTION": "Not as Described",            "chargeback_count":  32, "total_amount":  4128.50, "avg_resolution_days": 15.6, "won_count":  19, "win_rate_pct": 59.37}
+        ]
+      },
+      "summary": "1,111 chargebacks totaling $219K. Fraud-related codes (4837, 4863, 4870) drive 36% of count but 62% of dollar exposure. Win rate is lowest on counterfeit (18.5%) - consider strengthening 3DS coverage on those flows."
+    }
+  ],
+  "session_metrics": {
+    "total_queries": 8,
+    "templates_matched": 7,
+    "custom_queries": 1,
+    "validation_failures": 0,
+    "total_execution_ms": 1842,
+    "average_execution_ms": 230
+  }
+}

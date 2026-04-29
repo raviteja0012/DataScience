@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reconciliation Report — acme-corp-acquisition-integration</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; color: #333; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { color: #1a1a2e; border-bottom: 3px solid #16213e; padding-bottom: 10px; }
+  h2 { color: #16213e; margin-top: 30px; }
+  h3 { color: #0f3460; }
+  .summary-card { background: white; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .status { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: bold; color: white; font-size: 0.9em; }
+  .status-pass { background: #28a745; }
+  .status-fail { background: #dc3545; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; background: white; border-radius: 4px; overflow: hidden; }
+  th { background: #16213e; color: white; padding: 10px 12px; text-align: left; font-size: 0.85em; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+  tr:hover { background: #f8f9fa; }
+  .metric { font-size: 2em; font-weight: bold; color: #16213e; }
+  .metric-label { font-size: 0.85em; color: #666; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+  .metric-card { background: white; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .drill-down { margin: 10px 0; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 0 4px 4px 0; }
+  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Reconciliation Report</h1>
+<div class="summary-card">
+  <p><strong>Pipeline:</strong> acme-corp-acquisition-integration</p>
+  <p><strong>Generated:</strong> 2026-04-29T20:15:42.237122+00:00</p>
+  <p><strong>Overall Status:</strong> <span class="status" style="background:#dc3545">FAILED</span></p>
+  <p><strong>Entities Validated:</strong> 4</p>
+</div>
+
+
+<div class="metrics-grid">
+  <div class="metric-card"><div class="metric">4</div><div class="metric-label">Entities</div></div>
+  <div class="metric-card"><div class="metric">16</div><div class="metric-label">Total Checks</div></div>
+  <div class="metric-card"><div class="metric">15</div><div class="metric-label">Checks Passed</div></div>
+  <div class="metric-card"><div class="metric">1</div><div class="metric-label">Checks Failed</div></div>
+</div>
+
+
+<h2>customer <span class="status" style="background:#28a745">PASSED</span></h2>
+
+<h3>Row Count Reconciliation</h3>
+<table>
+<tr><th>Check</th><th>Expected</th><th>Actual</th><th>Delta</th><th>Delta %</th><th>Status</th><th>Notes</th></tr>
+<tr>
+  <td>total_row_count</td>
+  <td>1,000</td>
+  <td>1,000</td>
+  <td>+0</td>
+  <td>0.00%</td>
+  <td><span class="status status-pass">PASS</span></td>
+  <td>Sources: 1000, Deduped: 0, Expected: 1000</td>
+</tr><tr>
+  <td>source_count_legacy_oracle</td>
+  <td>500</td>
+  <td>500</td>
+  <td>+0</td>
+  <td>0.00%</td>
+  <td><span class="status status-pass">PASS</span></td>
+  <td>Source legacy_oracle contributed 500 rows</td>
+</tr><tr>
+  <td>source_count_legacy_sqlserver</td>
+  <td>500</td>
+  <td>500</td>
+  <td>+0</td>
+  <td>0.00%</td>
+  <td><span class="status status-pass">PASS</span></td>
+  <td>Source legacy_sqlserver contributed 500 rows</td>
+</tr>
+</table>
+<h3>Value Reconciliation</h3>
+<table>
+<tr><th>Check</th><th>Type</th><th>Column</th><th>Expected</th><th>Actual</th><th>Status</th></tr>
+<tr>
+  <td>customer_type_distribution</td>
+  <td>distribution</td>
+  <td>CUSTOMER_TYPE</td>
+  <td>None</td>
+  <td>{"NULL": 1000}</td>
+  <td><span class="status status-pass">PASS</span></td>
+</tr><tr>
+  <td>records_per_source</td>
+  <td>group_count</td>
+  <td>SOURCE_SYSTEM</td>
+  <td>None</td>
+  <td>{"NULL": 1000}</td>
+  <td><span class="status status-pass">PASS</span></td>
+</tr>
+</table>
+<h3>Hash-Based Row Comparison <span class="status status-pass">PASS</span></h3>
+<div class="metrics-grid">
+  <div class="metric-card"><div class="metric">1,000</div><div class="metric-label">Source Rows</div></div>
+  <div class="metric-card"><div class="metric">1,000</div><div class="metric-label">Target Rows</div></div>
+  <div class="metric-card"><div class="metric">1</div><div class="metric-label">Matching</div></div>
+  <div class="metric-card"><div class="metric">0.1%</div><div class="metric-label">Match Rate</div></div>
+</div>
+
+<h2>product <span class="status" style="background:#dc3545">FAILED</span></h2>
+
+<h3>Row Count Reconciliation</h3>
+<table>
+<tr><th>Check</th><th>Expected</th><th>Actual</th><th>Delta</th><th>Delta %</th><th>Status</th><th>Notes</th></tr>
+<tr>
+  <td>total_row_count</td>
+  <td>143</td>
+  <td>143</td>
+  <td>+0</td>
+  <td>0.00%</td>
+  <td><span class="status status-pass">PASS</span></td>
+  <td>Sources: 143, Deduped: 0, Expected: 143</td>
+</tr><tr>
+  <td>source_count_legacy_oracle</td>
+  <td>71</td>
+  <td>71</td>
+  <td>+0</td>
+  <td>0.00%</td>
+  <td><span class="status status-pass">PASS</span></td>
+  <td>Source legacy_oracle contributed 71 rows</td>
+</tr><tr>
+  <td>source_count_legacy_sqlserver</td>
+  <td>72</td>
+  <td>72</td>
+  <td>+0</td>
+  <td>0.00%</td>
+  <td><span class="status status-pass">PASS</span></td>
+  <td>Source legacy_sqlserver contributed 72 rows</td>
+</tr>
+</table>
+<h3>Value Reconciliation</h3>
+<table>
+<tr><th>Check</th><th>Type</th><th>Column</th><th>Expected</th><th>Actual</th><th>Status</th></tr>
+<tr>
+  <td>total_list_price</td>
+  <td>sum</td>
+  <td>LIST_PRICE</td>
+  <td>181,578.43</td>
+  <td>0.00</td>
+  <td><span class="status status-fail">FAIL</span></td>
+</tr><tr>
+  <td>price_range</td>
+  <td>min</td>
+  <td>LIST_PRICE</td>
+  <td>None</td>
+  <td>{"min": 0, "max": 0}</td>
+  <td><span class="status status-pass">PASS</span></td>
+</tr>
+</table>
+<h3>Hash-Based Row Comparison <span class="status status-pass">PASS</span></h3>
+<div class="metrics-grid">
+  <div class="metric-card"><div class="metric">143</div><div class="metric-label">Source Rows</div></div>
+  <div class="metric-card"><div class="metric">143</div><div class="metric-label">Target Rows</div></div>
+  <div class="metric-card"><div class="metric">1</div><div class="metric-label">Matching</div></div>
+  <div class="metric-card"><div class="metric">0.7%</div><div class="metric-label">Match Rate</div></div>
+</div>
+
+<h2>sales_order <span class="status" style="background:#28a745">PASSED</span></h2>
+
+<h3>Row Count Reconciliation</h3>
+<table>
+<tr><th>Check</th><th>Expected</th><th>Actual</th><th>Delta</th><th>Delta %</th><th>Status</th><th>Notes</th></tr>
+<tr>
+  <td>total_row_count</td>
+  <td>0</td>
+  <td>0</td>
+  <td>+0</td>
+  <td>0.00%</td>
+  <td><span class="status status-pass">PASS</span></td>
+  <td>Sources: 0, Deduped: 0, Expected: 0</td>
+</tr>
+</table>
+<h3>Value Reconciliation</h3>
+<table>
+<tr><th>Check</th><th>Type</th><th>Column</th><th>Expected</th><th>Actual</th><th>Status</th></tr>
+<tr>
+  <td>total_order_amount</td>
+  <td>sum</td>
+  <td>ORDER_TOTAL</td>
+  <td>0.00</td>
+  <td>0</td>
+  <td><span class="status status-pass">PASS</span></td>
+</tr><tr>
+  <td>total_tax_amount</td>
+  <td>sum</td>
+  <td>TAX_AMOUNT</td>
+  <td>0.00</td>
+  <td>0</td>
+  <td><span class="status status-pass">PASS</span></td>
+</tr>
+</table>
+<h3>Hash-Based Row Comparison <span class="status status-pass">PASS</span></h3>
+<div class="metrics-grid">
+  <div class="metric-card"><div class="metric">0</div><div class="metric-label">Source Rows</div></div>
+  <div class="metric-card"><div class="metric">0</div><div class="metric-label">Target Rows</div></div>
+  <div class="metric-card"><div class="metric">0</div><div class="metric-label">Matching</div></div>
+  <div class="metric-card"><div class="metric">0.0%</div><div class="metric-label">Match Rate</div></div>
+</div>
+
+<h2>sales_order_line <span class="status" style="background:#28a745">PASSED</span></h2>
+
+<h3>Row Count Reconciliation</h3>
+<table>
+<tr><th>Check</th><th>Expected</th><th>Actual</th><th>Delta</th><th>Delta %</th><th>Status</th><th>Notes</th></tr>
+<tr>
+  <td>total_row_count</td>
+  <td>0</td>
+  <td>0</td>
+  <td>+0</td>
+  <td>0.00%</td>
+  <td><span class="status status-pass">PASS</span></td>
+  <td>Sources: 0, Deduped: 0, Expected: 0</td>
+</tr>
+</table>
+<h3>Value Reconciliation</h3>
+<table>
+<tr><th>Check</th><th>Type</th><th>Column</th><th>Expected</th><th>Actual</th><th>Status</th></tr>
+<tr>
+  <td>total_line_amount</td>
+  <td>sum</td>
+  <td>LINE_TOTAL</td>
+  <td>0.00</td>
+  <td>0</td>
+  <td><span class="status status-pass">PASS</span></td>
+</tr><tr>
+  <td>total_quantity</td>
+  <td>sum</td>
+  <td>QUANTITY</td>
+  <td>0.00</td>
+  <td>0</td>
+  <td><span class="status status-pass">PASS</span></td>
+</tr>
+</table>
+<h3>Hash-Based Row Comparison <span class="status status-pass">PASS</span></h3>
+<div class="metrics-grid">
+  <div class="metric-card"><div class="metric">0</div><div class="metric-label">Source Rows</div></div>
+  <div class="metric-card"><div class="metric">0</div><div class="metric-label">Target Rows</div></div>
+  <div class="metric-card"><div class="metric">0</div><div class="metric-label">Matching</div></div>
+  <div class="metric-card"><div class="metric">0.0%</div><div class="metric-label">Match Rate</div></div>
+</div>
+
+<div class="footer">
+  <p>Multi-Source Data Integration Framework — Reconciliation Engine</p>
+</div>
+</div>
+</body>
+</html>

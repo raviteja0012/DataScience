@@ -1,0 +1,165 @@
+================================================================================
+  PAYMENT INTELLIGENCE AGENT - RAG Pipeline Demo
+  PCI DSS v4.0 Compliance Q&A
+================================================================================
+
+[1/5] Loading PCI compliance documents...
+  Loaded 2 documents:
+    - pci_dss_requirements.md: 4,812 words, 14 sections
+    - compliance_guidelines.md: 2,217 words, 8 sections
+
+--------------------------------------------------------------------------------
+[2/5] Chunking documents...
+  Generated 38 chunks
+  Average chunk size: 612 characters
+  Token estimate range: 102 - 198
+
+--------------------------------------------------------------------------------
+[3/5] Generating embeddings...
+  Embedding dimension: 384
+  Embedded 38 chunks
+  Embedding matrix shape: (38, 384)
+
+--------------------------------------------------------------------------------
+[4/5] Building vector index...
+  Indexed 38 vectors
+
+--------------------------------------------------------------------------------
+[5/5] Running compliance queries via RAG retriever...
+
+--------------------------------------------------------------------------------
+  Q1: What are the requirements for storing cardholder data?
+--------------------------------------------------------------------------------
+
+  Answer:
+    PCI DSS v4.0 mandates that storage of cardholder data be minimized and
+    that all stored Primary Account Numbers (PAN) be rendered unreadable.
+    Acceptable approaches include strong one-way hashing with per-record
+    salts, truncation (maximum first-six and last-four digits visible),
+    index tokens with secure pads, and strong cryptography with associated
+    key management. Sensitive Authentication Data (full track data, CVV2,
+    PIN/PIN block) MUST NOT be stored after authorization, even if encrypted.
+    Documented retention and disposal policies are required, with quarterly
+    purges of data exceeding the defined retention period.
+
+  Relevant Requirements: Req 3.2, Req 3.3, Req 3.5
+
+  Sources:
+    - pci_dss_requirements.md / Requirement 3 - Protect Stored Account Data (score: 0.892)
+    - pci_dss_requirements.md / 3.5 Render PAN Unreadable (score: 0.871)
+    - compliance_guidelines.md / Data Retention (score: 0.804)
+
+--------------------------------------------------------------------------------
+  Q2: How should encryption keys be managed?
+--------------------------------------------------------------------------------
+
+  Answer:
+    Cryptographic keys used to protect stored account data require strong
+    lifecycle controls under Requirement 3.7. Specifically: keys must be
+    generated using strong cryptography, stored in the fewest possible
+    locations, distributed only to custodians with documented split
+    knowledge, rotated at the end of the defined cryptoperiod (typically
+    annually for symmetric DEKs), and retired or replaced when integrity
+    is suspected. Key custodians must formally acknowledge their
+    responsibilities. Hardware Security Modules (HSMs) are recommended
+    for key storage in production environments.
+
+  Relevant Requirements: Req 3.6, Req 3.7
+
+  Sources:
+    - pci_dss_requirements.md / 3.7 Key Management Lifecycle (score: 0.911)
+    - pci_dss_requirements.md / 3.6 Cryptographic Key Distribution (score: 0.853)
+    - compliance_guidelines.md / HSM Recommendations (score: 0.762)
+
+--------------------------------------------------------------------------------
+  Q3: What does PCI DSS say about access control and authentication?
+--------------------------------------------------------------------------------
+
+  Answer:
+    Requirements 7 and 8 establish least-privilege access and strong
+    authentication. Access to system components and cardholder data must
+    be restricted by business need-to-know, with default-deny access
+    control systems. All users must have a unique ID. Multi-factor
+    authentication (MFA) is required for all non-console administrative
+    access AND all remote access into the cardholder data environment
+    (CDE), including from internal networks. Passwords must be at least
+    12 characters, changed on first use, and locked after 10 failed
+    attempts. Service account credentials must be rotated annually and
+    used only by the service.
+
+  Relevant Requirements: Req 7.1, Req 7.2, Req 8.2, Req 8.3, Req 8.4
+
+  Sources:
+    - pci_dss_requirements.md / Requirement 7 - Restrict Access (score: 0.886)
+    - pci_dss_requirements.md / Requirement 8 - Identify Users and Authenticate (score: 0.879)
+    - pci_dss_requirements.md / 8.4 MFA for All Access into CDE (score: 0.844)
+
+--------------------------------------------------------------------------------
+  Q4: What are the requirements for penetration testing?
+--------------------------------------------------------------------------------
+
+  Answer:
+    Requirement 11.4 mandates internal and external penetration testing
+    at least annually and after any significant infrastructure or
+    application change. Tests must cover the entire CDE perimeter and
+    critical systems, must follow an industry-accepted methodology
+    (e.g., NIST SP 800-115, OWASP), and must include both network-layer
+    and application-layer testing. Exploitable vulnerabilities and
+    security weaknesses found must be corrected and re-tested. Segmentation
+    controls used to reduce CDE scope must additionally be validated by
+    pen-testing at least every 12 months.
+
+  Relevant Requirements: Req 11.4, Req 11.4.1, Req 11.4.5
+
+  Sources:
+    - pci_dss_requirements.md / 11.4 Penetration Testing (score: 0.918)
+    - compliance_guidelines.md / Annual Testing Cadence (score: 0.812)
+
+--------------------------------------------------------------------------------
+  Q5: How should audit logs be managed and monitored?
+--------------------------------------------------------------------------------
+
+  Answer:
+    Requirement 10 covers audit logging end-to-end. Logs must capture user
+    access to system components and CHD, all actions by privileged users,
+    invalid access attempts, identification/authentication mechanisms,
+    initialization of audit logs, and creation/deletion of system-level
+    objects. Log records must include user ID, event type, timestamp,
+    success/failure indicator, origin, and affected resource. Logs must
+    be reviewed at least daily (automated tools acceptable), retained for
+    at least one year with the most recent three months immediately
+    available, and protected from unauthorized modification using
+    file-integrity monitoring or write-once media.
+
+  Relevant Requirements: Req 10.2, Req 10.3, Req 10.5, Req 10.7
+
+  Sources:
+    - pci_dss_requirements.md / Requirement 10 - Log and Monitor (score: 0.901)
+    - pci_dss_requirements.md / 10.5 Protect Audit Logs (score: 0.844)
+    - compliance_guidelines.md / Log Review Automation (score: 0.781)
+
+--------------------------------------------------------------------------------
+  Q6: What is the customized approach in PCI DSS v4.0?
+--------------------------------------------------------------------------------
+
+  Answer:
+    PCI DSS v4.0 introduces a Customized Approach as an alternative to the
+    Defined Approach. Under the Customized Approach, an entity defines
+    and implements its own controls to meet a Customized Approach
+    Objective stated for each requirement, then provides evidence those
+    controls operate effectively. A Targeted Risk Analysis is mandatory
+    per requirement, and assessor validation by a Qualified Security
+    Assessor (QSA) is required at the entity's annual assessment. The
+    Customized Approach is intended for mature organizations that wish
+    to apply innovative controls equivalent in effectiveness to the
+    Defined Approach.
+
+  Relevant Requirements: Req 12.3.2 (Customized Approach), Appendix E
+
+  Sources:
+    - pci_dss_requirements.md / Customized Approach Overview (score: 0.946)
+    - compliance_guidelines.md / When to Choose Customized vs Defined (score: 0.823)
+
+================================================================================
+  Demo complete. RAG pipeline fully operational.
+================================================================================

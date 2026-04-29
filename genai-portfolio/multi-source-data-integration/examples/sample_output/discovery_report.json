@@ -1,0 +1,176 @@
+{
+  "report_id": "discovery-acme-corp-2026-04-29",
+  "generated_at": "2026-04-29T20:15:41.012445+00:00",
+  "sources": [
+    {
+      "source_id": "legacy_oracle",
+      "label": "AcmeCorp Oracle ERP",
+      "engine": "oracle",
+      "version": "12c R2",
+      "schema": "ERP_OWNER",
+      "table_count": 4,
+      "total_rows": 2608,
+      "tables": [
+        {
+          "name": "CUST_MASTER",
+          "row_count": 500,
+          "column_count": 16,
+          "primary_key": ["CUST_ID"],
+          "columns": [
+            {"name": "CUST_ID",      "type": "INTEGER",  "nullable": false, "null_pct": 0.0,  "distinct": 500, "is_pk": true},
+            {"name": "CUST_NM",      "type": "VARCHAR",  "nullable": false, "null_pct": 0.0,  "distinct": 380},
+            {"name": "CUST_ADDR_1",  "type": "VARCHAR",  "nullable": true,  "null_pct": 4.0,  "distinct": 481},
+            {"name": "CUST_CITY",    "type": "VARCHAR",  "nullable": true,  "null_pct": 0.0,  "distinct": 49},
+            {"name": "CUST_STATE",   "type": "CHAR(2)",  "nullable": true,  "null_pct": 0.0,  "distinct": 50},
+            {"name": "TAX_ID",       "type": "VARCHAR",  "nullable": true,  "null_pct": 12.0, "distinct": 442},
+            {"name": "CREATED_BY",   "type": "VARCHAR",  "nullable": true,  "null_pct": 24.0, "distinct": 12},
+            {"name": "CREATED_DT",   "type": "DATE",     "nullable": false, "null_pct": 0.0,  "distinct": 488}
+          ]
+        },
+        {
+          "name": "PRODUCT_CATALOG",
+          "row_count": 71,
+          "column_count": 10,
+          "primary_key": ["PROD_ID"]
+        },
+        {
+          "name": "ORDER_HEADER",
+          "row_count": 500,
+          "column_count": 10,
+          "primary_key": ["ORDER_ID"],
+          "foreign_keys": [
+            {"column": "CUST_ID", "references": "CUST_MASTER.CUST_ID"}
+          ]
+        },
+        {
+          "name": "ORDER_DETAIL",
+          "row_count": 1537,
+          "column_count": 7,
+          "primary_key": ["ORDER_DTL_ID"],
+          "foreign_keys": [
+            {"column": "ORDER_ID", "references": "ORDER_HEADER.ORDER_ID"},
+            {"column": "PROD_ID",  "references": "PRODUCT_CATALOG.PROD_ID"}
+          ]
+        }
+      ],
+      "quality": {
+        "overall_score": 0.8717,
+        "passed": true,
+        "table_scores": {
+          "CUST_MASTER":     0.8408,
+          "PRODUCT_CATALOG": 0.9221,
+          "ORDER_HEADER":    0.9118,
+          "ORDER_DETAIL":    0.8121
+        },
+        "weakest_columns": [
+          {"table": "CUST_MASTER",  "column": "CREATED_BY",  "score": 0.6335,
+           "completeness": 0.76, "uniqueness": 0.02, "validity": 1.00, "consistency": 0.76,
+           "issue": "low completeness (24% null), low uniqueness (high cardinality reuse)"},
+          {"table": "ORDER_DETAIL", "column": "QTY",         "score": 0.6797,
+           "completeness": 1.00, "uniqueness": 0.04, "validity": 1.00, "consistency": 0.67,
+           "issue": "frequent duplicates of same QTY value (uniqueness=0.04), inconsistent units"}
+        ]
+      },
+      "dependencies": {
+        "fk_edges": 3,
+        "root_tables":   ["CUST_MASTER", "PRODUCT_CATALOG"],
+        "leaf_tables":   ["ORDER_DETAIL"],
+        "topological_load_order": ["CUST_MASTER", "PRODUCT_CATALOG", "ORDER_HEADER", "ORDER_DETAIL"],
+        "parallel_load_waves": [
+          {"wave": 1, "tables": ["CUST_MASTER", "PRODUCT_CATALOG"]},
+          {"wave": 2, "tables": ["ORDER_HEADER"]},
+          {"wave": 3, "tables": ["ORDER_DETAIL"]}
+        ]
+      }
+    },
+    {
+      "source_id": "legacy_sqlserver",
+      "label": "BetaTech SQL Server CRM",
+      "engine": "mssql",
+      "version": "2019",
+      "schema": "dbo",
+      "table_count": 4,
+      "total_rows": 2599,
+      "tables": [
+        {"name": "Customers",         "row_count": 500,  "column_count": 18, "primary_key": ["CustomerID"]},
+        {"name": "Products",          "row_count": 72,   "column_count": 10, "primary_key": ["ProductID"]},
+        {"name": "SalesOrders",       "row_count": 500,  "column_count": 10, "primary_key": ["SalesOrderID"]},
+        {"name": "SalesOrderDetails", "row_count": 1527, "column_count": 7,  "primary_key": ["SalesOrderDetailID"]}
+      ],
+      "quality": {
+        "overall_score": 0.8532,
+        "passed": true,
+        "table_scores": {
+          "Customers":         0.7986,
+          "Products":          0.9109,
+          "SalesOrders":       0.9059,
+          "SalesOrderDetails": 0.7975
+        }
+      },
+      "dependencies": {
+        "fk_edges": 3,
+        "root_tables": ["Customers", "Products"],
+        "leaf_tables": ["SalesOrderDetails"],
+        "topological_load_order": ["Customers", "Products", "SalesOrders", "SalesOrderDetails"],
+        "parallel_load_waves": [
+          {"wave": 1, "tables": ["Customers", "Products"]},
+          {"wave": 2, "tables": ["SalesOrders"]},
+          {"wave": 3, "tables": ["SalesOrderDetails"]}
+        ]
+      }
+    }
+  ],
+  "schema_mapping_to_target": {
+    "target_warehouse": "INTEGRATED",
+    "comparisons": [
+      {
+        "source": "ERP_OWNER.CUST_MASTER",
+        "target": "INTEGRATED.DIM_CUSTOMER",
+        "matched_columns": 13,
+        "unmapped_source": 3,
+        "unmapped_target": 9,
+        "coverage_pct": 81.2,
+        "sample_mappings": [
+          {"source_column": "CUST_ID",     "target_column": "CUSTOMER_SK",   "confidence": "low",   "method": "name_similarity"},
+          {"source_column": "CUST_NM",     "target_column": "CUSTOMER_NAME", "confidence": "exact", "method": "case_insensitive_match"},
+          {"source_column": "CUST_ADDR_1", "target_column": "CUSTOMER_BK",   "confidence": "low",   "method": "type_compatibility"}
+        ]
+      },
+      {
+        "source": "ERP_OWNER.PRODUCT_CATALOG",
+        "target": "INTEGRATED.DIM_PRODUCT",
+        "matched_columns": 9,
+        "unmapped_source": 1,
+        "unmapped_target": 5,
+        "coverage_pct": 90.0,
+        "sample_mappings": [
+          {"source_column": "PROD_SKU",  "target_column": "SKU",        "confidence": "high",  "method": "tokenized_match"},
+          {"source_column": "PROD_DESC", "target_column": "PRODUCT_BK", "confidence": "low",   "method": "fallback"}
+        ]
+      },
+      {
+        "source": "ERP_OWNER.ORDER_HEADER",
+        "target": "INTEGRATED.FACT_SALES_ORDER",
+        "matched_columns": 10,
+        "unmapped_source": 0,
+        "unmapped_target": 4,
+        "coverage_pct": 100.0
+      },
+      {
+        "source": "ERP_OWNER.ORDER_DETAIL",
+        "target": "INTEGRATED.FACT_SALES_ORDER",
+        "matched_columns": 5,
+        "unmapped_source": 2,
+        "unmapped_target": 9,
+        "coverage_pct": 71.4
+      }
+    ]
+  },
+  "merged_dependency_graph": {
+    "node_count": 8,
+    "edge_count": 6,
+    "components": 2,
+    "max_depth": 3
+  },
+  "duration_seconds": 0.072
+}

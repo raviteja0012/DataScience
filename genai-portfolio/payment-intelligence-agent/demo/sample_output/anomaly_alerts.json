@@ -1,0 +1,245 @@
+{
+  "report_id": "anomaly-2026-04-29-batch",
+  "generated_at": "2026-04-29T20:15:42.501203+00:00",
+  "window": {
+    "start": "2026-04-22T00:00:00+00:00",
+    "end": "2026-04-29T00:00:00+00:00",
+    "transactions_evaluated": 5000,
+    "anomaly_rate_pct": 4.86
+  },
+  "summary": {
+    "total_active": 9,
+    "by_severity": {
+      "critical": 2,
+      "high":     3,
+      "medium":   3,
+      "low":      1
+    },
+    "by_category": {
+      "statistical":  4,
+      "velocity":     2,
+      "fraud_pattern":2,
+      "time_series":  1
+    }
+  },
+  "alerts": [
+    {
+      "alert_id": "ALERT-2026-04-29-0001",
+      "severity": "critical",
+      "category": "fraud_pattern",
+      "score": 0.973,
+      "message": "Card-testing pattern detected: 47 sub-$5 authorizations from same BIN range within 12 minutes",
+      "created_at": "2026-04-29T03:42:11+00:00",
+      "status": "open",
+      "details": {
+        "pattern_type": "card_testing",
+        "bin_range": "411111-411199",
+        "transaction_count": 47,
+        "time_window_seconds": 720,
+        "decline_rate_pct": 91.5,
+        "merchant_id": "MERCH-009144",
+        "merchant_name": "Crescent Coffee Bars",
+        "sample_transaction_ids": ["TXN-7e9f1a", "TXN-7e9f1d", "TXN-7e9f24"]
+      },
+      "recommended_actions": [
+        "Block BIN range 411111-411199 at the gateway for 24h",
+        "Notify merchant of probable bot activity",
+        "Refer issuer for confirmation"
+      ]
+    },
+    {
+      "alert_id": "ALERT-2026-04-29-0002",
+      "severity": "critical",
+      "category": "statistical",
+      "score": 0.961,
+      "message": "Amount outlier: $48,221.50 transaction (z-score 7.18, normal p95 = $1,420)",
+      "created_at": "2026-04-29T11:08:47+00:00",
+      "status": "open",
+      "details": {
+        "method": "modified_zscore",
+        "transaction_id": "TXN-aa3120fc",
+        "merchant_id": "MERCH-001012",
+        "merchant_name": "Vertex Software",
+        "amount_usd": 48221.50,
+        "zscore": 7.18,
+        "iqr_upper": 1840.22,
+        "merchant_normal_range": [120.00, 1420.00],
+        "card_first_seen_days_ago": 3
+      },
+      "recommended_actions": [
+        "Hold settlement pending merchant confirmation",
+        "Step-up auth on next attempt for this PAN"
+      ]
+    },
+    {
+      "alert_id": "ALERT-2026-04-29-0003",
+      "severity": "high",
+      "category": "velocity",
+      "score": 0.892,
+      "message": "Velocity violation: 12 transactions on single card in 4 minutes (limit: 5/hour)",
+      "created_at": "2026-04-28T22:14:03+00:00",
+      "status": "open",
+      "details": {
+        "rule_id": "VEL-CARD-002",
+        "card_token": "tok_4f8c***",
+        "transaction_count": 12,
+        "window_minutes": 4,
+        "rule_threshold": "5/hour",
+        "total_amount_usd": 1894.20,
+        "approved_count": 4,
+        "declined_count": 8
+      },
+      "recommended_actions": [
+        "Apply 1-hour velocity hold on card_token",
+        "Trigger 3DS challenge on next attempt"
+      ]
+    },
+    {
+      "alert_id": "ALERT-2026-04-29-0004",
+      "severity": "high",
+      "category": "fraud_pattern",
+      "score": 0.871,
+      "message": "Geo-velocity anomaly: same card used in NY then LA within 47 minutes",
+      "created_at": "2026-04-28T18:22:55+00:00",
+      "status": "open",
+      "details": {
+        "pattern_type": "geo_velocity",
+        "card_token": "tok_3a991b***",
+        "origin_country": "US",
+        "origin_city": "New York",
+        "destination_city": "Los Angeles",
+        "delta_minutes": 47,
+        "feasible_travel_minutes": 360,
+        "feasibility_ratio": 0.13
+      },
+      "recommended_actions": [
+        "Decline current transaction",
+        "Notify cardholder via issuer push"
+      ]
+    },
+    {
+      "alert_id": "ALERT-2026-04-29-0005",
+      "severity": "high",
+      "category": "statistical",
+      "score": 0.832,
+      "message": "Risk score outlier cluster: 14 transactions with risk_score > 0.85 in 30 min",
+      "created_at": "2026-04-29T05:50:18+00:00",
+      "status": "open",
+      "details": {
+        "method": "iqr",
+        "cluster_size": 14,
+        "window_minutes": 30,
+        "merchant_id": "MERCH-004422",
+        "merchant_name": "Northwind Marketplace",
+        "avg_risk_score": 0.911,
+        "common_factor": "shipping_address_high_risk_zip"
+      },
+      "recommended_actions": [
+        "Surface to fraud analyst queue",
+        "Review shipping ZIP risk feature drift"
+      ]
+    },
+    {
+      "alert_id": "ALERT-2026-04-29-0006",
+      "severity": "medium",
+      "category": "time_series",
+      "score": 0.711,
+      "message": "Daily transaction count for 2026-04-25 is 35% below 7-day baseline",
+      "created_at": "2026-04-26T00:05:12+00:00",
+      "status": "acknowledged",
+      "details": {
+        "method": "rolling_zscore",
+        "date": "2026-04-25",
+        "transaction_count": 11077,
+        "baseline_avg": 17042,
+        "delta_pct": -34.99,
+        "expected_range": [15411, 18888],
+        "likely_cause": "Saturday weekend baseline"
+      },
+      "recommended_actions": [
+        "Confirm not a processing outage",
+        "If expected (weekend), suppress this signature on Sat/Sun"
+      ]
+    },
+    {
+      "alert_id": "ALERT-2026-04-29-0007",
+      "severity": "medium",
+      "category": "statistical",
+      "score": 0.687,
+      "message": "Decline rate spike: CREDIT_CARD decline rate 14.2% (baseline 7.5%)",
+      "created_at": "2026-04-29T09:30:00+00:00",
+      "status": "open",
+      "details": {
+        "method": "zscore",
+        "metric": "decline_rate_pct",
+        "current_value": 14.2,
+        "baseline_value": 7.5,
+        "zscore": 4.21,
+        "primary_decline_code": "51_INSUFFICIENT_FUNDS",
+        "issuer_concentration_pct": 62.0
+      },
+      "recommended_actions": [
+        "Check for issuer-side incident at concentration BIN",
+        "Engage issuer relations if persists > 1h"
+      ]
+    },
+    {
+      "alert_id": "ALERT-2026-04-29-0008",
+      "severity": "medium",
+      "category": "velocity",
+      "score": 0.652,
+      "message": "Merchant volume velocity: 3.1x normal hourly volume for last 2 hours",
+      "created_at": "2026-04-29T15:00:42+00:00",
+      "status": "open",
+      "details": {
+        "merchant_id": "MERCH-002211",
+        "merchant_name": "Beacon Restaurant Grp",
+        "current_hourly_count": 412,
+        "baseline_hourly_count": 132,
+        "ratio": 3.12,
+        "duration_hours": 2,
+        "is_planned_event": null
+      },
+      "recommended_actions": [
+        "Confirm with merchant if planned promotion",
+        "Auto-extend processing capacity if sustained"
+      ]
+    },
+    {
+      "alert_id": "ALERT-2026-04-29-0009",
+      "severity": "low",
+      "category": "statistical",
+      "score": 0.521,
+      "message": "Mild risk_score drift on payment method DEBIT_CARD (avg 0.18 -> 0.24)",
+      "created_at": "2026-04-29T12:00:00+00:00",
+      "status": "open",
+      "details": {
+        "method": "modified_zscore",
+        "feature": "risk_score",
+        "payment_method": "DEBIT_CARD",
+        "previous_avg": 0.18,
+        "current_avg": 0.24,
+        "drift_pct": 33.3,
+        "duration_days": 7
+      },
+      "recommended_actions": [
+        "Monitor - no immediate action required",
+        "Schedule model recalibration if drift persists 14d"
+      ]
+    }
+  ],
+  "pattern_violations": [
+    {
+      "pattern_type": "card_testing",
+      "severity": "critical",
+      "description": "47 micro-charges < $5 from same BIN range",
+      "linked_alert_id": "ALERT-2026-04-29-0001"
+    },
+    {
+      "pattern_type": "geo_velocity",
+      "severity": "high",
+      "description": "Impossible travel time between transactions",
+      "linked_alert_id": "ALERT-2026-04-29-0004"
+    }
+  ]
+}
