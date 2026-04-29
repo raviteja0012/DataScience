@@ -48,6 +48,222 @@ The system runs as a Streamlit web application with a chat-style interface, supp
            └────────────────────────────────────────────┘
 ```
 
+### Mermaid: Subsystem Routing
+
+```mermaid
+flowchart TB
+    UI[Streamlit Chat UI<br/>src/app.py]
+    SAN[Input Sanitizer<br/>+ PII Masker]
+    ORCH[Agent Orchestrator<br/>process_query]
+    IC[Intent Classifier<br/>3-tier: keyword > similarity > follow-up]
+    CTX[Context Manager<br/>20-turn rolling history<br/>Entity Memory]
+
+    subgraph Subsystems["Routed Handlers"]
+        direction TB
+        NL[NL-to-SQL<br/>Pipeline]
+        RAG[RAG<br/>Pipeline]
+        ANO[Anomaly<br/>Pipeline]
+    end
+
+    subgraph NLBlock["Analytics Subsystem"]
+        TRANS[NLToSQLTranslator<br/>8 templates + LLM fallback]
+        VAL[QueryValidator<br/>13 blocked ops<br/>injection scan]
+        EXEC[Execute<br/>Snowflake / Demo]
+        ANA[ResultAnalyzer]
+    end
+
+    subgraph RAGBlock["RAG Subsystem"]
+        EMB[Embeddings<br/>Cortex EMBED / MiniLM]
+        VS[Vector Store<br/>Cortex Search / FAISS]
+        RET[Retriever<br/>top-k cosine]
+        SYN[Synthesis<br/>Cortex COMPLETE]
+    end
+
+    subgraph ANOBlock["Anomaly Subsystem"]
+        STAT[Statistical Detector<br/>Z + MAD + IQR + IsoForest]
+        PAT[Pattern Analyzer<br/>velocity, geo, card-test]
+        AM[Alert Manager<br/>severity + dedup]
+    end
+
+    RF[Response Formatter<br/>Plotly auto-chart<br/>PII final mask]
+
+    UI --> SAN
+    SAN --> ORCH
+    ORCH --> IC
+    IC --> CTX
+    CTX --> ORCH
+    ORCH --> Subsystems
+
+    NL --> TRANS --> VAL --> EXEC --> ANA --> RF
+    RAG --> EMB --> VS --> RET --> SYN --> RF
+    ANO --> STAT
+    ANO --> PAT
+    STAT --> AM
+    PAT --> AM
+    AM --> RF
+
+    RF --> UI
+
+    classDef orch fill:#e3f2fd,stroke:#1565c0
+    classDef sub fill:#f3e5f5,stroke:#6a1b9a
+    classDef out fill:#e8f5e9,stroke:#2e7d32
+    class ORCH,IC,CTX,SAN orch
+    class TRANS,VAL,EXEC,ANA,EMB,VS,RET,SYN,STAT,PAT,AM sub
+    class RF,UI out
+```
+
+### Mermaid: RAG Query Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Streamlit UI
+    participant Orch as Orchestrator
+    participant IC as Intent Classifier
+    participant Retr as RAGRetriever
+    participant Emb as Embeddings<br/>(Cortex EMBED / MiniLM)
+    participant VS as Vector Store<br/>(Cortex Search / FAISS)
+    participant LLM as Cortex COMPLETE<br/>(mistral-large2)
+    participant Fmt as Response Formatter
+
+    User->>UI: "What does PCI DSS say about key management?"
+    UI->>Orch: process_query(text)
+    Orch->>IC: classify_with_context(text, recent_intents)
+    IC-->>Orch: Intent.COMPLIANCE (confidence=0.84)
+    Orch->>Retr: query(text)
+    Retr->>Emb: embed(text)
+    Emb-->>Retr: query_vector (768-d)
+    Retr->>VS: search(query_vector, top_k=5)
+    VS-->>Retr: chunks[] with scores
+    Retr->>LLM: synthesize(chunks, original_question)
+    LLM-->>Retr: answer + citations
+    Retr-->>Orch: {answer, sources[], requirement_ids[]}
+    Orch->>Fmt: format_compliance_response()
+    Fmt-->>UI: FormattedResponse(text + sources)
+    UI-->>User: Rendered answer with relevance scores
+```
+
+### Mermaid: NL-to-SQL Query Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Streamlit UI
+    participant Orch as Orchestrator
+    participant IC as Intent Classifier
+    participant NL as NLToSQLTranslator
+    participant Val as QueryValidator
+    participant Exec as Snowflake / Demo
+    participant Mask as PIIMasker
+    participant Fmt as Response Formatter
+
+    User->>UI: "Top 10 merchants by volume last month"
+    UI->>Orch: process_query(text)
+    Orch->>Orch: InputSanitizer.sanitize()
+    Orch->>IC: classify_with_context()
+    IC-->>Orch: Intent.ANALYTICS (confidence=0.91)
+    Orch->>NL: translate(text, context)
+    NL->>NL: Match query against 8 templates
+    NL-->>Orch: {sql, explanation}
+
+    rect rgb(255, 236, 210)
+        Note over Val: Guardrails (defense-in-depth)
+        Orch->>Val: validate(sql)
+        Val->>Val: Statement type = SELECT only
+        Val->>Val: Blocked ops scan (DROP, DELETE, ...)
+        Val->>Val: Injection pattern scan
+        Val->>Val: Function blocklist
+        Val->>Val: Subquery depth + join count
+        Val->>Val: Schema boundary check
+        Val-->>Orch: ValidationResult(is_safe=true)
+    end
+
+    alt validation failed
+        Orch-->>UI: format_error_response(reason)
+    else validation passed
+        Orch->>Exec: execute(sql)
+        Exec-->>Orch: result_df
+        Orch->>Mask: mask PII columns<br/>(card_number, ssn, account_number)
+        Mask-->>Orch: masked_df
+        Orch->>Fmt: format_analytics_response()
+        Fmt->>Fmt: auto_chart() heuristic
+        Fmt-->>UI: FormattedResponse(text + chart + table + sql)
+    end
+
+    UI-->>User: Rendered response
+```
+
+### Mermaid: Anomaly Detection Ensemble
+
+```mermaid
+flowchart LR
+    IN[(Transaction Data<br/>DataFrame)]
+
+    IN --> STAT[Statistical Detector]
+    IN --> PAT[Pattern Analyzer]
+
+    subgraph Statistical["Statistical Methods"]
+        Z[Z-Score<br/>threshold=3.0]
+        MZ[Modified Z-Score<br/>MAD-based]
+        IQR[IQR Fencing<br/>multiplier=1.5]
+        IF[Isolation Forest<br/>contamination=0.05]
+    end
+
+    subgraph Patterns["Domain Patterns"]
+        VEL[Velocity Check<br/>tx-per-entity / window]
+        GEO[Geographic<br/>impossible travel<br/>high-risk regions]
+        AMT[Amount Patterns<br/>round / micro / dust]
+        TMP[Temporal<br/>off-hours spikes]
+        CT[Card Testing<br/>rapid small declines]
+    end
+
+    STAT --> Z
+    STAT --> MZ
+    STAT --> IQR
+    STAT --> IF
+    PAT --> VEL
+    PAT --> GEO
+    PAT --> AMT
+    PAT --> TMP
+    PAT --> CT
+
+    Z --> ENS[Ensemble Score<br/>weighted normalize 0-1]
+    MZ --> ENS
+    IQR --> ENS
+    IF --> ENS
+
+    VEL --> VIO[PatternViolation<br/>list]
+    GEO --> VIO
+    AMT --> VIO
+    TMP --> VIO
+    CT --> VIO
+
+    ENS --> AM[Alert Manager]
+    VIO --> AM
+
+    AM --> SC{Severity<br/>Classifier}
+    SC -->|score >= 0.9| CRIT[CRITICAL]
+    SC -->|score >= 0.7| HI[HIGH]
+    SC -->|score >= 0.5| MED[MEDIUM]
+    SC -->|score >= 0.4| LO[LOW]
+
+    CRIT --> DEDUP{Fingerprint<br/>Dedup}
+    HI --> DEDUP
+    MED --> DEDUP
+    LO --> DEDUP
+
+    DEDUP --> OUT[Alerts JSON<br/>+ anomalies DF]
+
+    classDef stat fill:#e3f2fd,stroke:#1565c0
+    classDef pat fill:#fff3e0,stroke:#e65100
+    classDef sev fill:#ffebee,stroke:#c62828
+    class Z,MZ,IQR,IF,ENS stat
+    class VEL,GEO,AMT,TMP,CT,VIO pat
+    class CRIT,HI,MED,LO sev
+```
+
 ## Component Design
 
 ### 1. Agent Layer (`src/agent/`)

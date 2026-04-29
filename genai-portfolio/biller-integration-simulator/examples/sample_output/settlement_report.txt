@@ -1,0 +1,102 @@
+======================================================================
+  Three-Way Settlement Reconciliation Example
+======================================================================
+
+  [1] Onboarding biller...
+       Biller: UTIL-GA-POWER-001 (Georgia Power & Light)
+
+  [2] Generating synthetic dataset...
+       Accounts:   40
+       Bills:      63
+       Payments:   50
+       Settlement records:
+         Biller:   50
+         Platform: 50
+         Bank:     49
+
+  [3] Running three-way reconciliation...
+
+  Starting reconciliation for UTIL-GA-POWER-001
+    biller_count=50, platform_count=50, bank_count=49
+  Exception case created: EXC-2CBADBC4BF (amount_mismatch, high)
+    txn=7b464122-9390-467d-b8d9-0e4c3d0a4888
+  Exception case created: EXC-9D2461C117 (missing_transaction, critical)
+    txn=96199934-5f96-490d-bc47-90d0386649ba
+  Case EXC-9D2461C117 auto-resolved (action=auto_match, reason=Next-day settlement timing)
+  Reconciliation complete: batch=SETTLE-8605AB0795F8
+
+  ============================================================
+  RECONCILIATION RESULTS
+  ============================================================
+
+    Batch ID:       SETTLE-8605AB0795F8
+    Settlement Date:2026-04-29
+
+    Record Counts:
+          biller: 50
+        platform: 50
+            bank: 49
+
+    Totals:
+          biller_total:   $9,312.88
+        platform_total:   $9,353.81
+            bank_total:   $9,153.61
+
+    Match Results:
+      Total Results:  50
+      Matched:        48
+      Exceptions:      2
+      Match Rate:     96.0%
+
+    Status Breakdown:
+             amount_mismatch: 1
+                     matched: 48
+                missing_bank: 1
+
+    Exception Severity:
+            high: 1
+        critical: 1
+
+    Exception Details (showing first 5):
+    -------------------------------------------------------
+      TXN: 7b464122-9390-467d-b...
+        Status:     amount_mismatch
+        Severity:   high
+        Amt Diff:   $2.32
+        Details:    Amount mismatch: biller=67.38, bank=69.70, difference=2.32
+                    (tolerance threshold = 0.01)
+
+      TXN: 96199934-5f96-490d-b...
+        Status:     missing_bank
+        Severity:   critical
+        Details:    Transaction present in biller and platform but missing
+                    from bank settlement file (auto-resolved as next-day timing)
+
+  [4] Exception handling summary...
+
+    Open Cases:     1
+    Resolved:       1
+    Open by Severity:
+            high: 1
+
+    Escalation Notifications:
+      Case EXC-2CBADBC4BF -> settlement_analyst (severity: high)
+
+  [5] Sending settlement notifications...
+       Settlement completion notification sent to biller
+       Channel: email -> settlements@georgiapower&light.com
+       Subject: Settlement Complete - Batch SETTLE-8605AB0795F8
+
+  [6] JSON reconciliation report (excerpt)...
+  See settlement_report.json for full structured output.
+
+======================================================================
+  Settlement reconciliation example complete.
+
+  KEY DEMONSTRATED CAPABILITIES:
+  - Three-way reconciliation (biller / platform / bank)
+  - Tolerance-based amount matching (configurable)
+  - Auto-resolution heuristics (next-day timing windows)
+  - Severity-based exception escalation
+  - Settlement completion notifications
+======================================================================

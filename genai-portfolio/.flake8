@@ -1,0 +1,42 @@
+# =============================================================================
+# GenAI Portfolio - flake8 configuration
+# Author: Ravi Potluru
+#
+# Mirrors the flake8 invocation used in .github/workflows/ci.yml so that
+# `make lint` (or a bare `flake8` from this directory) reports the same
+# results developers will see in CI.
+# =============================================================================
+
+[flake8]
+
+# Match the CI line length
+max-line-length = 120
+
+# Match CI ignore set:
+#   E501  line too long  (we manage line length via black; flake8 should not duplicate)
+#   W503  line break before binary operator  (conflicts with black formatting)
+#   E203  whitespace before ':'  (conflicts with black slicing style)
+#   E266  too many leading '#' for block comment  (we allow ## section banners)
+#   E402  module level import not at top of file  (needed for sys.path tweaks in examples)
+ignore = E501,W503,E203,E266,E402
+
+# Directories that should never be linted
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.egg-info,
+    .pytest_cache,
+    .mypy_cache,
+    .tox,
+    .venv,
+    venv,
+    env,
+    output,
+    docs/_build
+
+# Show source lines and summary statistics in output
+show-source = True
+statistics = True
+count = True

@@ -1,0 +1,143 @@
+{
+  "report_generated_at": "2026-04-29T20:15:34.500000+00:00",
+  "biller_id": "UTIL-GA-POWER-001",
+  "window": {
+    "start": "2026-04-29T00:00:00+00:00",
+    "end": "2026-04-29T23:59:59+00:00"
+  },
+  "summary": {
+    "total_cases": 4,
+    "open": 3,
+    "resolved": 1,
+    "by_type": {
+      "duplicate_payment": 1,
+      "amount_mismatch": 1,
+      "missing_transaction": 1,
+      "authorization_failure": 1
+    },
+    "by_severity": {
+      "critical": 1,
+      "high": 1,
+      "medium": 2,
+      "low": 0
+    }
+  },
+  "exceptions": [
+    {
+      "case_id": "EXC-EB8501BF32",
+      "type": "duplicate_payment",
+      "severity": "medium",
+      "open": true,
+      "transaction_id": "5cdb4f63-37c3-4e1a-bf67-60113a19f2b7",
+      "biller_id": "UTIL-GA-POWER-001",
+      "amount": "160.930",
+      "method": "credit_card",
+      "channel": "ivr",
+      "created_at": "2026-04-29T20:15:33.957600+00:00",
+      "correlation_id": "25a341fc-4a5a-4b7d-9e9e-599b6d77f9a6",
+      "classification": {
+        "rule_id": "DUP-001",
+        "rule_name": "Idempotency key collision within 24h window",
+        "auto_resolution": false,
+        "suggested_action": "verify_with_customer",
+        "owner_role": "payment_ops"
+      },
+      "details": {
+        "idempotency_key": "UTIL-GA-POWER-001:2729208732:160.930:20260428",
+        "original_transaction_timestamp": "2026-04-29T20:15:33.957466+00:00",
+        "time_delta_seconds": 0.000083,
+        "error_code": "DUPLICATE_PAYMENT",
+        "error_message": "Duplicate payment detected (idempotency_key: UTIL-GA-POWER-001:2729208732:160.930:20260428)"
+      }
+    },
+    {
+      "case_id": "EXC-2CBADBC4BF",
+      "type": "amount_mismatch",
+      "severity": "high",
+      "open": true,
+      "transaction_id": "7b464122-9390-467d-b8d9-0e4c3d0a4888",
+      "biller_id": "UTIL-GA-POWER-001",
+      "created_at": "2026-04-29T20:15:34.437171+00:00",
+      "correlation_id": "a65b2eba-924c-40eb-b384-0446c4ad7e25",
+      "classification": {
+        "rule_id": "RECON-002",
+        "rule_name": "Three-way amount mismatch beyond tolerance",
+        "auto_resolution": false,
+        "suggested_action": "manual_review_settlement_analyst",
+        "owner_role": "settlement_analyst"
+      },
+      "escalation": {
+        "escalated_to": "settlement_analyst",
+        "escalation_level": 0,
+        "escalated_at": "2026-04-29T20:15:34.437896+00:00",
+        "sla_hours": 4
+      },
+      "details": {
+        "biller_amount": "67.380",
+        "platform_amount": "67.380",
+        "bank_amount": "69.700",
+        "amount_difference": "2.320",
+        "tolerance": "0.010",
+        "settlement_batch_id": "SETTLE-8605AB0795F8",
+        "error_code": "AMOUNT_MISMATCH"
+      }
+    },
+    {
+      "case_id": "EXC-9D2461C117",
+      "type": "missing_transaction",
+      "severity": "critical",
+      "open": false,
+      "transaction_id": "96199934-5f96-490d-bc47-90d0386649ba",
+      "biller_id": "UTIL-GA-POWER-001",
+      "created_at": "2026-04-29T20:15:34.437334+00:00",
+      "resolved_at": "2026-04-29T20:15:34.437586+00:00",
+      "correlation_id": "a65b2eba-924c-40eb-b384-0446c4ad7e25",
+      "classification": {
+        "rule_id": "RECON-005",
+        "rule_name": "Bank record missing within next-day window",
+        "auto_resolution": true,
+        "suggested_action": "auto_match",
+        "owner_role": "settlement_analyst"
+      },
+      "resolution": {
+        "action": "auto_match",
+        "reason": "Next-day settlement timing - bank record expected on T+1",
+        "resolved_by": "system"
+      },
+      "details": {
+        "biller_amount": "143.220",
+        "platform_amount": "143.220",
+        "bank_amount": null,
+        "settlement_batch_id": "SETTLE-8605AB0795F8",
+        "error_code": "MISSING_BANK_RECORD"
+      }
+    },
+    {
+      "case_id": "EXC-2EFE172DFB",
+      "type": "authorization_failure",
+      "severity": "medium",
+      "open": true,
+      "transaction_id": "830d9c68-8a5f-4f0b-81d4-5ac13891a10c",
+      "biller_id": "UTIL-GA-POWER-001",
+      "amount": "253.330",
+      "method": "credit_card",
+      "channel": "web",
+      "created_at": "2026-04-29T20:15:33.958801+00:00",
+      "correlation_id": "abe71fd9-c451-4be4-88d4-b02904828a35",
+      "classification": {
+        "rule_id": "AUTH-003",
+        "rule_name": "Insufficient funds at issuer",
+        "auto_resolution": false,
+        "suggested_action": "notify_customer_retry",
+        "owner_role": "payment_ops"
+      },
+      "details": {
+        "issuer_decline_code": "51",
+        "issuer_decline_reason": "Insufficient funds",
+        "retry_count": 0,
+        "retry_eligible_at": "2026-04-30T20:15:33+00:00",
+        "error_code": "INSUFFICIENT_FUNDS"
+      }
+    }
+  ]
+}

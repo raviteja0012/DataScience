@@ -1,0 +1,84 @@
+{
+  "batch_id": "SETTLE-8605AB0795F8",
+  "biller_id": "UTIL-GA-POWER-001",
+  "biller_name": "Georgia Power & Light",
+  "settlement_date": "2026-04-29",
+  "generated_at": "2026-04-29T20:15:34.437687+00:00",
+  "correlation_id": "a65b2eba-924c-40eb-b384-0446c4ad7e25",
+  "record_counts": {
+    "biller": 50,
+    "platform": 50,
+    "bank": 49
+  },
+  "amounts": {
+    "biller_total": "9312.880",
+    "platform_total": "9353.810",
+    "bank_total": "9153.610",
+    "currency": "USD"
+  },
+  "reconciliation": {
+    "total_results": 50,
+    "matched": 48,
+    "exceptions": 2,
+    "match_rate": "96.0%",
+    "by_status": {
+      "matched": 48,
+      "amount_mismatch": 1,
+      "missing_bank": 1
+    },
+    "exceptions_by_severity": {
+      "high": 1,
+      "critical": 1
+    }
+  },
+  "exceptions": [
+    {
+      "case_id": "EXC-2CBADBC4BF",
+      "transaction_id": "7b464122-9390-467d-b8d9-0e4c3d0a4888",
+      "status": "amount_mismatch",
+      "severity": "high",
+      "biller_amount": "67.380",
+      "bank_amount": "69.700",
+      "amount_difference": "2.320",
+      "tolerance": "0.010",
+      "open": true,
+      "escalated_to": "settlement_analyst",
+      "escalation_level": 0,
+      "age_hours": 0.0,
+      "details": "Amount mismatch: biller=67.380, bank=69.700, difference=2.32"
+    },
+    {
+      "case_id": "EXC-9D2461C117",
+      "transaction_id": "96199934-5f96-490d-bc47-90d0386649ba",
+      "status": "missing_bank",
+      "severity": "critical",
+      "biller_amount": "143.220",
+      "platform_amount": "143.220",
+      "bank_amount": null,
+      "open": false,
+      "auto_resolved": true,
+      "resolution": {
+        "action": "auto_match",
+        "reason": "Next-day settlement timing",
+        "resolved_at": "2026-04-29T20:15:34.437586+00:00"
+      },
+      "details": "Transaction present in biller and platform but missing from bank file at cutoff"
+    }
+  ],
+  "settlement_terms": {
+    "method": "ach_batch",
+    "timing": "next_business_day",
+    "fee_card": 2.65,
+    "fee_ach": 0.45
+  },
+  "notifications": [
+    {
+      "notification_id": "NOTIF-000001",
+      "event": "settlement_complete",
+      "channel": "email",
+      "recipient": "settlements@georgiapower&light.com",
+      "subject": "Settlement Complete - Batch SETTLE-8605AB0795F8",
+      "dispatched_at": "2026-04-29T20:15:34.437938+00:00"
+    }
+  ]
+}
