@@ -6,7 +6,7 @@ setup(
     name="biller-integration-simulator",
     version="1.2.0",
     author="Ravi Potluru",
-    author_email="ravi.potluru@example.com",
+    author_email="rpotluru@kent.edu",
     description=(
         "Utility CIS-to-Payment Platform Integration Simulator — "
         "models Oracle CC&B schema mapping, payment processing, "
@@ -14,7 +14,7 @@ setup(
     ),
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/ravipotluru/biller-integration-simulator",
+    url="https://github.com/raviteja0012/DataScience",
     packages=find_packages(),
     include_package_data=True,
     package_data={

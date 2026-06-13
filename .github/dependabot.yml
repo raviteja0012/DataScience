@@ -1,0 +1,45 @@
+version: 2
+
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "ci"
+
+  # Biller Integration Simulator
+  - package-ecosystem: "pip"
+    directory: "/genai-portfolio/biller-integration-simulator"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "biller"
+    open-pull-requests-limit: 5
+
+  # Payment Intelligence Agent
+  - package-ecosystem: "pip"
+    directory: "/genai-portfolio/payment-intelligence-agent"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "payment"
+    open-pull-requests-limit: 5
+
+  # Multi-Source Data Integration
+  - package-ecosystem: "pip"
+    directory: "/genai-portfolio/multi-source-data-integration"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "integration"
+    open-pull-requests-limit: 5

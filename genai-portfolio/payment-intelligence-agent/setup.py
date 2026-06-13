@@ -18,7 +18,7 @@ setup(
     ),
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Payment Intelligence Team",
+    author="Ravi Potluru",
     python_requires=">=3.10",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
@@ -49,7 +49,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "payment-agent=app:main",
+            "payment-agent=src.app:main",
         ],
     },
     classifiers=[

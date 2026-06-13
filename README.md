@@ -97,7 +97,7 @@ See [genai-portfolio/README.md](genai-portfolio/README.md) for architecture deta
 
 ```bash
 # Clone the repo
-git clone <this-repo-url>
+git clone https://github.com/raviteja0012/DataScience.git
 cd DataScience
 
 # Run any classic project (each is self-contained)
@@ -117,10 +117,15 @@ Each project generates its own synthetic data, so no external datasets are neede
 ### Running All Tests
 
 ```bash
-# GenAI portfolio tests (240 total)
+# GenAI portfolio tests (240 total) — must run from each project directory
+cd genai-portfolio
 for proj in biller-integration-simulator payment-intelligence-agent multi-source-data-integration; do
-  python -m pytest genai-portfolio/$proj/tests/ -v
+  echo "=== $proj ==="
+  (cd "$proj" && python -m pytest tests/ -v)
 done
+
+# Or use the Makefile
+cd genai-portfolio && make test
 ```
 
 ## Production-Ready Framework

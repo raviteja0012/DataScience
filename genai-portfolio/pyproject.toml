@@ -1,0 +1,44 @@
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "TCH"]
+ignore = ["E501", "E203", "E266", "E402"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+no_strict_optional = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = [
+    "biller-integration-simulator/tests",
+    "payment-intelligence-agent/tests",
+    "multi-source-data-integration/tests",
+]
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "unit: fast, isolated unit tests with no I/O or network access",
+    "integration: tests that exercise multiple modules or external resources",
+    "slow: long-running tests that should be skipped in tight feedback loops",
+]
+filterwarnings = [
+    "ignore:.*datetime\\.utcnow.*:DeprecationWarning",
+    "ignore:.*utcnow\\(\\) is deprecated.*:DeprecationWarning",
+    "ignore::DeprecationWarning:pandas",
+    "ignore::FutureWarning:pandas",
+    "ignore::UserWarning:transformers",
+    "ignore::FutureWarning:huggingface_hub",
+]

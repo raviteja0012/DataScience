@@ -68,8 +68,8 @@ Each project is self-contained with its own dependencies. To get started with an
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd genai-portfolio
+git clone https://github.com/raviteja0012/DataScience.git
+cd DataScience/genai-portfolio
 
 # Navigate to a project
 cd biller-integration-simulator   # or payment-intelligence-agent, multi-source-data-integration

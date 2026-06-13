@@ -43,12 +43,19 @@
 ```
 DataScience/
 ├── .github/workflows/        # CI/CD pipelines
-│   ├── ci.yml                # GenAI portfolio tests + lint
+│   ├── ci.yml                # GenAI portfolio tests + lint + coverage
 │   └── test-projects.yml     # Classic projects smoke tests
 ├── genai-portfolio/          # GenAI/enterprise data projects (240 tests)
 │   ├── biller-integration-simulator/   # 53 tests
 │   ├── payment-intelligence-agent/     # 101 tests
-│   └── multi-source-data-integration/  # 86 tests
+│   ├── multi-source-data-integration/  # 86 tests
+│   ├── .pre-commit-config.yaml         # black, isort, ruff, mypy hooks
+│   ├── .flake8                         # Shared lint config
+│   ├── Makefile                        # Build/test/deploy automation
+│   ├── pytest.ini                      # Aggregate test config
+│   ├── ARCHITECTURE.md                 # Cross-project architecture
+│   ├── CONTRIBUTING.md                 # Dev setup & PR process
+│   └── DEPLOYMENT.md                   # Production deployment guide
 ├── projects/                 # 33 classic DS/ML projects
 │   ├── 01-machine-learning/  # 8 projects
 │   ├── 02-deep-learning/     # 5 projects
