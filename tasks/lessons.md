@@ -69,3 +69,17 @@
 - Pre-commit hooks should match CI config but can be stricter (ruff catches more than flake8)
 - Deployment docs with concrete SQL and K8s YAML are more useful than abstract guidance
 - Badge URLs should point to the actual GitHub user/repo for them to render correctly
+
+## 2026-06-13 — Final Review & Polish
+
+### Decisions
+- Added `.github/dependabot.yml` covering pip dependencies for all 3 projects + GitHub Actions
+- Added `pyproject.toml` at genai-portfolio level to unify black/isort/ruff/mypy/pytest config
+- Standardized author to "Ravi Potluru" with Kent State email across all setup.py files
+- Fixed payment-intelligence-agent entry point from `app:main` to `src.app:main`
+
+### Lessons
+- Always audit setup.py entry_points — they silently fail if the module path is wrong
+- Generic team names in setup.py (e.g. "Data Engineering Team") look impersonal in a portfolio — use real author name
+- Clone URLs should point to the real repo, not `<placeholder>` — reviewers will try them
+- Running tests from the wrong directory causes confusing `ModuleNotFoundError` — document this prominently

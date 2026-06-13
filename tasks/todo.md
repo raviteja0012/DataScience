@@ -23,7 +23,12 @@
 - [x] Set up pre-commit hooks (black, ruff, mypy)
 - [x] Add deployment guide showing how all 3 projects integrate in production
 
+- [x] Add Dependabot configuration for automated dependency updates
+- [x] Add pyproject.toml with unified tool configuration
+- [x] Fix setup.py entry points and author metadata across all projects
+- [x] Fix README clone URLs and test run instructions
+- [x] Update CLAUDE.md project structure
+
 ## Backlog
 - [ ] Add integration tests between projects (MSI → BIS → PIA data flow)
 - [ ] Set up GitHub branch protection rules on main
-- [ ] Add Dependabot configuration for automated dependency updates
