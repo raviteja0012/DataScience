@@ -26,3 +26,15 @@
 - Matrix strategy with `fail-fast: false` gives better visibility — all three project test suites report independently
 - Path-filtered workflows prevent unnecessary CI runs when only one area of the repo changes
 - Always update project counts in README when adding new project categories (33 → 36)
+
+## 2026-07-02 — Review of Shakeeb's pattern-strategy-bot bundle
+
+### Decisions
+- Keep his trading bot in a separate PRIVATE repo; do not merge into this public portfolio (live-ops state, secrets history, different lifecycle)
+- Review was static-only: externally-shared code is not executed in the review environment
+- Any auto-trading from Discord signals must route through the bot's existing risk gates (caps, drawdown halt, kill-switch), stay in paper mode, and use author allow-lists
+
+### Lessons
+- "Shared for the team" bundles can ship live credentials on purpose — always check config files AND docs (his secrets were duplicated in a markdown file) before pushing anywhere
+- A commented-out .gitignore entry is as good as no entry: `git add -A` would have leaked three tokens
+- Shadow-mode tracking (log what rejected signals would have done) is a cheap, powerful pattern for tuning filter thresholds with data instead of intuition
